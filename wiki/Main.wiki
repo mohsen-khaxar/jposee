@@ -10,7 +10,7 @@ jPOS Extended Edition Software Development Kit goes one step beyond jPOS by prov
 
 jPOS-EE-SDK assumes that the following software is installed in your development environment:
 
-  * Java[tm] JDK 1.4.2 or higher _(baseline will be soon 1.5)_
+  * Java platform (J2SE) 1.4.2 or higher _(baseline will be soon 1.5)_
   * Apache's ANT 1.6.2 or higher _(we recommend using the latest version available)_
 
 == Downloading ==
