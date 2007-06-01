@@ -108,7 +108,7 @@
         <echo message="user.name=${user.name}"/>
         <echo message="user.language=${user.language}"/>
         <echo message="q2.classpath=${q2.classpath}"/>
-        <echo message="filter.properties=${filter.properties}" />
+        <echo message="filter.properties=${target}.properties" />
     </target>
 
     <target name="main" depends="prepare, copy-bin, manifest">
@@ -123,7 +123,7 @@
         description="compile all" />
 
     <target name="modules" depends="prepare">
-      <filter filtersfile="${filter.properties}" />
+      <filter filtersfile="${target}.properties" />
       <copy todir="${build.modules}" flatten="false" filtering="false">
         <fileset dir="${modules.dir}" includesfile="${modules.include.list}" />
       </copy>
@@ -234,7 +234,7 @@
      <delete file="${dist.dir}/${archive}.tar" />
     </target>
     <target name="support" depends="prepare">
-        <filter filtersfile="${filter.properties}" />
+        <filter filtersfile="${target}.properties" />
         <copy todir="${classes.dir}" flatten="false" overwrite="true" filtering="true">
             <fileset dir="${build.src}">
                 <patternset refid="hbm.support.files"/>
