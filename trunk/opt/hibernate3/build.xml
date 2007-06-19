@@ -10,7 +10,7 @@
   <copy 
    file="${module.cfg.dir}/_hibernate.cfg.head" 
    tofile="${build.cfg}/hibernate.cfg.tmp" overwrite="true" />
-  <filter filtersfile="${filter.properties}" />
+  <filter filtersfile="${target}.properties" />
   <concat destfile="${build.cfg}/hibernate.cfg.tmp" append="true" force="true">
    <path>
      <fileset dir="${modules.dir}" excludesfile="${modules.ignore.list}">
