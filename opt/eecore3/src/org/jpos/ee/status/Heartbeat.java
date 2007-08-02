@@ -1,0 +1,106 @@
+/*
+ *  jPOS Extended Edition
+ *  Copyright (C) 2005 Alejandro P. Revilla
+ *  jPOS.org (http://jpos.org)
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+package org.jpos.ee.status;
+
+import java.util.Date;
+import java.sql.SQLException;
+import org.hibernate.Transaction;
+import org.hibernate.HibernateException;
+
+import org.jpos.ee.DB;
+import org.jpos.q2.QBeanSupport;
+import org.jpos.iso.ISOUtil;
+import org.jpos.util.DateUtil;
+
+public class Heartbeat extends QBeanSupport implements Runnable {
+    DB db;
+    StatusManager mgr;
+    long interval;
+    String statusId;
+
+    public void initService () throws Exception {
+        db = new DB();
+        mgr = new StatusManager (db);
+        interval = cfg.getLong ("interval", 60000L);
+        initStatus();
+    }
+    public void startService() {
+        new Thread (this).start();
+    }
+    public void run() {
+        long start = System.currentTimeMillis();
+        for (int i=1; running(); i++) {
+            try {
+                db.open ();
+                mgr.check ();
+                mgr.touch (statusId, Status.OK, getDetail (start, i));
+                Thread.sleep (interval);
+            } catch (Throwable t) {
+                getLog().error (t);
+                ISOUtil.sleep (1000);
+            } finally {
+                close();
+            }
+        }
+    }
+    private void close() {
+        try {
+            db.close();
+        } catch (HibernateException e) {
+            getLog().error (e);
+        }
+    }
+    private String getDetail (long start, int tick) {
+        Runtime r = Runtime.getRuntime();
+        StringBuffer sb = new StringBuffer();
+        sb.append ("memory=");
+        sb.append (r.totalMemory());
+        sb.append (", threads=");
+        sb.append (Thread.activeCount());
+        sb.append (", uptime=");
+        sb.append (DateUtil.toDays (System.currentTimeMillis() - start));
+        sb.append (", tick=");
+        sb.append (tick);
+        return sb.toString();
+    }
+    private void initStatus() 
+        throws HibernateException, SQLException
+    {
+        try {
+            db.open ();
+            statusId = cfg.get ("status-id", getName());
+            Status s = mgr.getStatus (statusId, false);
+            if (s == null) {
+                Transaction tx = db.beginTransaction();
+                s = mgr.getStatus (statusId, true);
+                s.setName (cfg.get ("status-name", statusId));
+                s.setGroupName (cfg.get ("status-group", ""));
+                s.setTimeoutState (cfg.get ("on-timeout", Status.OFF));
+                s.setTimeout (cfg.getLong ("status-timeout", 360000L));
+                s.setLastTick (new Date());
+                tx.commit();
+            }
+        } finally {
+            close();
+        }
+    }
+}
+
