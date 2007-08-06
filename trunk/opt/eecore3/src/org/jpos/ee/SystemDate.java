@@ -21,7 +21,7 @@ public class SystemDate {
         return offset;
     }
     public static void resetOffset() {
-        this.offset = 0L;
+        offset = 0L;
     }
     public static long currentTimeMillis() {
         return System.currentTimeMillis() + offset;
