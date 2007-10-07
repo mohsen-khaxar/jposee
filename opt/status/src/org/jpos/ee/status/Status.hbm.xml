@@ -30,6 +30,11 @@
       <key column="status" />
       <one-to-many class="org.jpos.ee.StatusRevisionEntry" />
     </set>
+    <set name="tags" lazy="true" cascade="all-delete-orphan" 
+      order-by="id asc">
+      <key column="status" />
+      <one-to-many class="org.jpos.ee.status.StatusTag" />
+    </set>
   </class>
 </hibernate-mapping>
 

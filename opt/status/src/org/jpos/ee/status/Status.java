@@ -3,6 +3,7 @@ package org.jpos.ee.status;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+import java.util.Iterator;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 
@@ -51,23 +52,7 @@ public class Status extends org.jpos.ee.status.StatusBase implements Serializabl
     /** persistent field */
     private Set revisions;
 
-    /** full constructor */
-    public Status(String id, String name, String state, String detail, String groupName, Date lastTick, long timeout, String timeoutState, String command, String validCommands, boolean expired, int maxEvents, Set events, Set revisions) {
-        this.id = id;
-        this.name = name;
-        this.state = state;
-        this.detail = detail;
-        this.groupName = groupName;
-        this.lastTick = lastTick;
-        this.timeout = timeout;
-        this.timeoutState = timeoutState;
-        this.command = command;
-        this.validCommands = validCommands;
-        this.expired = expired;
-        this.maxEvents = maxEvents;
-        this.events = events;
-        this.revisions = revisions;
-    }
+    private Set tags;
 
     /** default constructor */
     public Status() {
@@ -188,6 +173,23 @@ public class Status extends org.jpos.ee.status.StatusBase implements Serializabl
         return this.revisions;
     }
 
+    public void setTags (Set tags) {
+        this.tags = tags;
+    }
+    public Set getTags () {
+        return this.tags;
+    }
+    public String getTagsAsString () {
+        StringBuffer sb = new StringBuffer();
+        Iterator it = getTags().iterator();
+        while (it.hasNext()) {
+            if (sb.length()>0) {
+                sb.append(" ");
+            }   
+            sb.append(((StatusTag)it.next()).getTag());
+        }   
+        return sb.toString();
+    }
     public void setRevisions(Set revisions) {
         this.revisions = revisions;
     }
