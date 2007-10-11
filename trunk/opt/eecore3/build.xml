@@ -21,7 +21,7 @@
  </path>
 
  <target name="prepare">
-  <filter filtersfile="${filter.properties}" />
+  <filter filtersfile="${target}.properties" />
   <concat destfile="${build.src}/org/jpos/ee/Constants.tmp" append="false" force="true">
    <header filtering="no" trimleading="yes"><![CDATA[package org.jpos.ee;
        public interface Constants {]]>
