@@ -35,6 +35,7 @@
      </fileset>
    </path>
    <footer filtering="no" trimleading="yes">}</footer>
+   <string value="" />
   </concat>
   <copy file="${build.src}/org/jpos/ee/Constants.tmp"
       tofile="${build.src}/org/jpos/ee/Constants.java"
@@ -55,6 +56,7 @@
       <include name="**/*.p"/>
      </fileset>
    </path>
+   <string value="" />
   </concat>
   <copy file="${build.src}/org/jpos/ee/Constants.tmp"
       tofile="${build.src}/org/jpos/ee/Constants.properties"
