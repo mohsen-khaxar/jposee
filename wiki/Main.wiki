@@ -5,14 +5,5 @@ jPOS is a Java® platform-based, mission-critical financial transaction library/
 
 jPOS Extended Edition Software Development Kit goes one step beyond jPOS by providing a development environment with a growing set of proven, ready-to-deploy components based on jPOS' best practices.
 
-== Quick Start ==
-
-=== Prerequisites ===
-
-jPOS-EE-SDK assumes that the following software is installed in your development environment:
-
-  * Java platform (J2SE) 1.4.2 or higher _(baseline will be soon 1.5)_
-  * Apache's ANT 1.6.2 or higher _(we recommend using the latest version available)_
-
-== Downloading ==
-jPOS-EE is distributed via subversion. You can find the [http://code.google.com/p/jposee/source source code repository here].
+== jPOS-EE Documentation ==
+The jPOS-EE documentation is available in http://jpos.org/jposee/jPOS-EE.pdf
