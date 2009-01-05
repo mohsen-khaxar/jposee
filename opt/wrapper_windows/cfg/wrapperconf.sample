@@ -60,7 +60,6 @@ wrapper.java.classpath.34=lib/velocity-1.4-dev.jar
 wrapper.java.classpath.35=lib/xercesImpl-2.6.2.jar
 wrapper.java.classpath.36=lib/xwork-1.0.5.jar
 wrapper.java.classpath.37=lib/org.mortbay.jmx.jar
-wrapper.java.classpath.38=lib/ra-crypto.jar
 
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
