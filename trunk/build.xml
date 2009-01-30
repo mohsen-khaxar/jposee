@@ -69,12 +69,16 @@
     </target>
 
     <target name="jar" depends="modules, support, main"
-        description="creates jpos.jar">
+        description="creates jpos-ee.jar">
       <jar jarfile="${build.dir}/${name}.jar" 
          basedir="${classes.dir}"
          manifest="${classes.dir}/MANIFEST.MF" 
 	 includes="**" />
     </target>
+
+    <target name="singlejar" depends="unjar, jar"
+     description="creates a single jpos-ee.jar including all supporting jars" />
+
 
     <target name="unjar" depends="modules, support, main">
       <unjar dest="${classes.dir}">
@@ -83,9 +87,6 @@
          </fileset>
       </unjar>
     </target>
-
-    <target name="singlejar" depends="unjar, jar"
-     description="creates a single jpos.jar including all supporting jars" />
 
     <target name="clean" description="clean up build and dist directories">
         <delete dir="${build.dir}"/>
