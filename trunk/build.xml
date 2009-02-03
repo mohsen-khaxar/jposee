@@ -357,7 +357,7 @@ Sealed: false</concat>
   <target name="run" depends="jar" 
         description="run jPOS-EE under Ant's control">
      <java
-        jar="${build.dir}/jpos-ee.jar"
+        jar="${build.dir}/${name}.jar"
         fork="true"
         dir="${build.dir}">
      </java>
