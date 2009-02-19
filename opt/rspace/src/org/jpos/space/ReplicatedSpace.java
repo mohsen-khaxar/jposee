@@ -49,6 +49,7 @@ public class ReplicatedSpace
     String seqName;
     String coordinatorKey;
     Space sp;
+    View view;
     boolean trace;
     public static final long TIMEOUT    = 15000L;
     public static final long MAX_WAIT   = 500L;
@@ -299,6 +300,7 @@ public class ReplicatedSpace
         }
     }
     public void viewAccepted (View view) {
+        this.view = view;
         if (coordinatorKey != null) {
             synchronized (sp) {
                 SpaceUtil.wipe (sp, coordinatorKey);
@@ -310,6 +312,9 @@ public class ReplicatedSpace
             evt.addMessage (view.toString());
             Logger.log (evt);
         }
+    }
+    public boolean isCoordinator () {
+        return channel.getLocalAddress().equals (view.getMembers().get(0));
     }
     public void setState(byte[] new_state) {
         // 
