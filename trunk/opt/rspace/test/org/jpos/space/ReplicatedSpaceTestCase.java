@@ -10,21 +10,23 @@ import junit.framework.TestSuite;
 public class ReplicatedSpaceTestCase extends TestCase {
     ReplicatedSpace rs1;
     ReplicatedSpace rs2;
+    Logger logger;
     public void setUp() throws Exception {
-        Logger logger = new Logger();
+        logger = new Logger();
         logger.addListener (new SimpleLogListener (System.out));
-        Space sp1 = SpaceFactory.getSpace ("tspace:sp1");
-        Space sp2 = SpaceFactory.getSpace ("tspace:sp2");
         rs1 = new ReplicatedSpace (
-            sp1, "rspace", "../cfg/udp.xml", logger, "RS1", true
-        );
-        rs2 = new ReplicatedSpace (
-            sp2, "rspace", "../cfg/udp.xml", logger, "RS2", true
+            SpaceFactory.getSpace ("tspace:sp1"),
+            "rspace", "../cfg/udp.xml", logger, "RS1", true, true
         );
     }
 
     public void testAll () throws Exception {
         outISOMsg ();
+        rs2 = new ReplicatedSpace (
+            SpaceFactory.getSpace ("tspace:sp2"),
+            "rspace", "../cfg/udp.xml", logger, "RS2", true, true
+        );
+        inISOMsg();
         for (int i=0; i<10; i++) {
             basicTest ();
             outInRs1();
@@ -37,7 +39,6 @@ public class ReplicatedSpaceTestCase extends TestCase {
             outRdIn ("out-rd-in-0", rs2, rs1);
             emptyCheck();
         }
-        inISOMsg();
     }
     public void outISOMsg() throws Exception {
         ISOMsg m = new ISOMsg ("0800");
@@ -48,7 +49,15 @@ public class ReplicatedSpaceTestCase extends TestCase {
         rs1.out ("ISOQUEUE", m);
     }
     public void inISOMsg() throws Exception {
-        ISOMsg m = (ISOMsg) rs2.inp ("ISOQUEUE");
+
+        // verify that the message is in the local sp2
+        Space sp = SpaceFactory.getSpace ("tspace:sp2");
+        ISOMsg m = (ISOMsg) sp.rd ("ISOQUEUE", 5000L);
+        if (m != null)
+            m.dump (System.out, "local-sp2> ");
+        assertNotNull ("ISOMsg is null in local sp2", m);
+
+        m = (ISOMsg) rs2.inp ("ISOQUEUE");
         if (m != null)
             m.dump (System.out, "");
         assertNotNull ("ISOMsg is null", m);

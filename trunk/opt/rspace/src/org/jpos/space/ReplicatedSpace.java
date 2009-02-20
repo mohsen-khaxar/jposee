@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.util.Map;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.Log;
 import org.jpos.util.Logger;
@@ -47,10 +48,10 @@ public class ReplicatedSpace
     String nodeName;
     String nodePrefix;
     String seqName;
-    String coordinatorKey;
     Space sp;
     View view;
     boolean trace;
+    boolean replicate;
     public static final long TIMEOUT    = 15000L;
     public static final long MAX_WAIT   = 500L;
     public static final long ONE_MINUTE = 60000L;
@@ -62,7 +63,7 @@ public class ReplicatedSpace
             String configFile, 
             Logger logger, 
             String realm,
-            boolean trace)
+            boolean trace, boolean replicate)
         throws ChannelException, IOException
     {
         super ();
@@ -72,15 +73,14 @@ public class ReplicatedSpace
         this.nodeName = channel.getLocalAddress().toString();
         this.nodePrefix = nodeName + ".";
         this.seqName  = nodeName + ".seq";
-        this.coordinatorKey = nodeName + ".mbr0";
         this.trace = trace;
-        sp.out (coordinatorKey, channel.getView().getMembers().get(0));
+        this.replicate = replicate;
     }
     public ReplicatedSpace 
         (Space sp, String groupName, String configFile)
         throws ChannelException, IOException
     {
-        this (sp, groupName, configFile, null, null, false);
+        this (sp, groupName, configFile, null, null, false, false);
     }
     public void close() throws IOException {
         block();
@@ -203,6 +203,14 @@ public class ReplicatedSpace
                     if (!channel.getLocalAddress().equals (msg.getSrc()))
                         sp.inp (r.value);
                     break;
+                case Request.SPACE_COPY:
+                    if (replicate && !isCoordinator() && sp instanceof TSpace) {
+                        ((TSpace)sp).setEntries ((Map) r.value);
+                        synchronized (this) {
+                            notifyAll();
+                        }
+                    }
+                    break;
             }
         } else if (evt != null) {
             evt.addMessage ("  class: " + obj.getClass().getName());
@@ -279,9 +287,8 @@ public class ReplicatedSpace
     }
     private Address getCoordinator () {
         assertChannel();
-        Object c = sp.rd (coordinatorKey, TIMEOUT);
-        if (c instanceof Address) 
-            return (Address) c;
+        if (view != null)
+            return view.getMembers().get(0);
 
         throw new SpaceError ("Channel not ready - coordinator is null");
     }
@@ -295,22 +302,27 @@ public class ReplicatedSpace
     }
     /** Block sending and receiving of messages until ViewAccepted is called */
     public void block () {
-        synchronized (sp) {
-            SpaceUtil.wipe (sp, coordinatorKey);
-        }
+        this.view = null;
     }
     public void viewAccepted (View view) {
         this.view = view;
-        if (coordinatorKey != null) {
-            synchronized (sp) {
-                SpaceUtil.wipe (sp, coordinatorKey);
-                sp.out (coordinatorKey, view.getMembers().get(0));
-            }
-        }
         if (logger != null) {
             LogEvent evt = createInfo ("view-accepted");
             evt.addMessage (view.toString());
             Logger.log (evt);
+        }
+        if (replicate && isCoordinator() && sp instanceof TSpace) {
+            new Thread () {
+                public void run() {
+                    send (null,
+                        new Request (
+                            Request.SPACE_COPY, 
+                            null, // value is ref key for response
+                            ((TSpace)sp).getEntries()
+                        )
+                    );
+                }
+            }.start();
         }
     }
     public boolean isCoordinator () {
@@ -318,6 +330,12 @@ public class ReplicatedSpace
     }
     public void setState(byte[] new_state) {
         // 
+    }
+    public void setReplicate (boolean replicate) {
+        this.replicate = replicate;
+    }
+    public boolean isReplicate () {
+        return replicate;
     }
     public byte[] getState() {
         return "DummyState".getBytes();
@@ -375,9 +393,11 @@ public class ReplicatedSpace
         static final int INP=5;
         static final int INP_RESPONSE=6;
         static final int INP_NOTIFICATION=7;
+        static final int SPACE_COPY=8;
         static final String[] types = { 
             "", "OUT", "PUSH", "RDP", "RDP_RESPONSE", 
-            "INP", "INP_RESPONSE", "INP_NOTIFICATION"
+            "INP", "INP_RESPONSE", "INP_NOTIFICATION", 
+            "SPACE_COPY"
         };
 
         public int type=0;
