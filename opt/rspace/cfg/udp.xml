@@ -57,6 +57,7 @@
     <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                    max_bytes="1000000"/>
     <VIEW_SYNC avg_send_interval="60000"   />
+    <!-- ENCRYPT encrypt_entire_message="false" sym_init="128" sym_algorithm="AES/ECB/PKCS5Padding" asym_init="512" asym_algorithm="RSA"/ -->
     <pbcast.GMS print_local_addr="true" join_timeout="3000"
                 shun="false"
                 view_bundling="true"/>
