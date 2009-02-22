@@ -22,6 +22,7 @@ package org.jpos.space;
 
 import org.jpos.q2.QBeanSupport;
 import org.jpos.space.Space;
+import org.jpos.space.TSpace;
 import org.jpos.space.SpaceFactory;
 import org.jpos.core.ConfigurationException;
 import org.jpos.util.NameRegistrar;
@@ -50,7 +51,8 @@ public class ReplicatedSpaceAdaptor extends QBeanSupport {
                 cfg.get ("config", "cfg.jgroups.xml"),
                 getLog().getLogger(),
                 getLog().getRealm(),
-                cfg.getBoolean ("trace")
+                cfg.getBoolean ("trace"),
+                cfg.getBoolean ("replicate", sp instanceof TSpace)
             );
             NameRegistrar.register (rspaceUri, rs);
         } catch (Throwable t) {
