@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.util.Map;
+import java.util.UUID;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.Log;
 import org.jpos.util.Logger;
@@ -123,7 +124,7 @@ public class ReplicatedSpace
     }
     public Object inp (Object key) {
         Request r = new Request (Request.INP, key, 0);
-        r.value = Long.toString (r.hashCode());
+        r.value = UUID.randomUUID().toString();
         sendToCoordinator (r);
         Object obj = sp.in (r.value, MAX_WAIT);
         if (obj instanceof NullPointerException)
