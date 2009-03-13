@@ -19,7 +19,6 @@ package org.jpos.q2.nserver;
 
 import org.apache.mina.core.session.IoSession;
 import org.jpos.iso.ISOException;
-import org.jpos.iso.ISOFilter.VetoException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOSource;
 
@@ -37,7 +36,7 @@ public class SessionISOSource implements ISOSource
         this.session = session;
     }
 
-    public void send(ISOMsg isoMsg) throws IOException, ISOException, VetoException
+    public void send(ISOMsg isoMsg) throws IOException, ISOException
     {
         if (session.isConnected())
         {
@@ -48,5 +47,10 @@ public class SessionISOSource implements ISOSource
     public boolean isConnected()
     {
         return session.isConnected();
+    }
+
+    public IoSession getSession()
+    {
+        return session;
     }
 }

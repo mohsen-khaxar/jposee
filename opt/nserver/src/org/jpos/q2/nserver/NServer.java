@@ -289,7 +289,11 @@ public class NServer extends QBeanSupport implements NServerMBean, IoHandler
             Iterator iter = requestListeners.iterator();
             while (iter.hasNext())
             {
-                if (((ISORequestListener) iter.next()).process(m.getSource(), m))
+                final SessionISOSource source = new SessionISOSource(session);
+                m.setSource(source);
+                m.setDirection(ISOMsg.INCOMING);
+
+                if (((ISORequestListener) iter.next()).process(source, m))
                 {
                     break;
                 }
