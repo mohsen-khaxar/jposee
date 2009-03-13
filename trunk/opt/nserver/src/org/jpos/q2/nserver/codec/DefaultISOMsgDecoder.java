@@ -26,12 +26,12 @@ import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOMsg;
 import org.jpos.q2.nserver.NullMessage;
 import org.jpos.q2.nserver.ProtocolHandler;
-import org.jpos.q2.nserver.SessionISOSource;
 
 import java.util.Arrays;
 
 /**
  * @author Victor Salaman (vsalaman@gmail.com)
+ *
  */
 public class DefaultISOMsgDecoder extends CumulativeProtocolDecoder implements ProtocolDecoder
 {
@@ -39,14 +39,15 @@ public class DefaultISOMsgDecoder extends CumulativeProtocolDecoder implements P
 
     private final static String DECODER_STATE_KEY = DefaultISOMsgDecoder.class.getName() + ".DECODER_STATE";
 
+    private static final int STAGE_MSG_LEN=1;
+    private static final int STAGE_MSG_HEADER=2;
+    private static final int STAGE_MSG_PAYLOAD=3;
+    private static final int STAGE_MSG_DONE=4;
+
     private static class DecoderCtx
     {
-        boolean messageLenRead;
-        boolean headerRead;
-        boolean payloadRead;
-        boolean trailerRead;
-
-        int len = -1;
+        int stage;
+        int len = 0;
         byte[] header;
         byte[] payload;
         byte[] trailer;
@@ -59,70 +60,111 @@ public class DefaultISOMsgDecoder extends CumulativeProtocolDecoder implements P
 
     protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception
     {
-        boolean decoded = false;
+        long enterTime=System.currentTimeMillis();
 
         DecoderCtx ctx = (DecoderCtx) session.getAttribute(DECODER_STATE_KEY);
         if (ctx == null)
         {
             ctx = new DecoderCtx();
+            ctx.stage=STAGE_MSG_LEN;
             session.setAttribute(DECODER_STATE_KEY, ctx);
         }
 
-        if (protocolHandler.isLengthEncoded() && !ctx.messageLenRead)
+        while(in.remaining()>0)
         {
-            if (isDataAvailable(in, protocolHandler.getMessageLengthByteSize()))
+            if(System.currentTimeMillis()-enterTime>10000)
             {
-                ctx.len = protocolHandler.readMessageLength(in);
-                if(ctx.len==0 && protocolHandler.isUseZeroLengthAsKeepalive())
-                {
-                    byte[] b=new byte[protocolHandler.getMessageLengthByteSize()];
-                    Arrays.fill(b,(byte)0);
-                    out.write(new NullMessage(b));
-                    return true;
-                }
-                else if(ctx.len>0 && ctx.len<= protocolHandler.getMaxPacketLength())
-                {
-                    ctx.messageLenRead = true;
-                }
-                else
-                {
-                    throw new ISOException(
-                        "receive length " +ctx.len + " seems strange - maxPacketLength = " + protocolHandler.getMaxPacketLength());
-                }
+                throw new ISOException("Decoding has aborted since we couldn't complete the decoding process in less than 10 seconds.");
             }
-        }
 
-        if (protocolHandler.containsHeader() && !ctx.headerRead)
-        {
-            if (isDataAvailable(in, protocolHandler.getHeaderLength()))
+            switch(ctx.stage)
             {
-                ctx.header = protocolHandler.readHeader(in, protocolHandler.getHeaderLength());
-                ctx.len -= ctx.header.length;
-                ctx.headerRead = true;
+                case STAGE_MSG_LEN:
+                {
+                    if(!protocolHandler.isLengthEncoded())
+                    {
+                        ctx.stage++;
+                        break;
+                    }
+                    if (isDataAvailable(in, protocolHandler.getMessageLengthByteSize()))
+                    {
+                        ctx.len = protocolHandler.readMessageLength(in);
+                        if(ctx.len==0 && protocolHandler.isUseZeroLengthAsKeepalive())
+                        {
+                            byte[] b=new byte[protocolHandler.getMessageLengthByteSize()];
+                            Arrays.fill(b,(byte)0);
+                            out.write(new NullMessage(b));
+                            return true;
+                        }
+                        else if(ctx.len>0 && ctx.len<= protocolHandler.getMaxPacketLength())
+                        {
+                            ctx.stage++;
+                        }
+                        else
+                        {
+                            throw new ISOException(
+                                "receive length " +ctx.len + " seems strange - maxPacketLength = " + protocolHandler.getMaxPacketLength());
+                        }
+                    }
+                    else return false;
+                }
+                break;
+                case STAGE_MSG_HEADER:
+                {
+                    if(!protocolHandler.containsHeader())
+                    {
+                        ctx.stage++;
+                        break;
+                    }
+                    if (isDataAvailable(in, protocolHandler.getHeaderLength()))
+                    {
+                        ctx.header = protocolHandler.readHeader(in, protocolHandler.getHeaderLength());
+                        int oldCtxLen=ctx.len;
+                        ctx.len -= ctx.header.length;
+                        if(ctx.len<0)
+                        {
+                            throw new ISOException(
+                                "Header is bigger than specified " +
+                                "(header_len+payload_len cannot be bigger than message_len),\n " +
+                                "payload size used to be: "+oldCtxLen+", is now: "+ctx.len);
+                        }
+                        ctx.stage++;
+                    }
+                    else return false;
+                }
+                break;
+                case STAGE_MSG_PAYLOAD:
+                {
+                    if (!protocolHandler.isLengthEncoded())
+                    {
+                        ctx.payload = protocolHandler.readStream(in);
+                        ctx.stage=STAGE_MSG_DONE;
+                        markDone(session, out, ctx);
+                        return true;
+                    }
+                    else if (isDataAvailable(in, ctx.len))
+                    {
+                        if(ctx.len<=0 || ctx.len>protocolHandler.getMaxPacketLength())
+                        {
+                            throw new ISOException(
+                                "payload length " +ctx.len + " seems strange - maxPacketLength = " + protocolHandler.getMaxPacketLength());
+                        }
+                        ctx.payload = protocolHandler.readPayload(in, ctx.len);
+                        ctx.stage=STAGE_MSG_DONE;
+                        markDone(session, out, ctx);
+                        return true;
+                    }
+                    else return false;
+                }
             }
         }
+        return false;
+    }
 
-        if (!ctx.payloadRead)
-        {
-            if (!protocolHandler.isLengthEncoded())
-            {
-                ctx.payload = protocolHandler.readStream(in);
-                ctx.payloadRead = true;
-            }
-            else if (isDataAvailable(in, ctx.len))
-            {
-                ctx.payload = protocolHandler.readPayload(in, ctx.len);
-                ctx.payloadRead = true;
-            }
-        }
-
-        if (ctx.payloadRead)
-        {
-            out.write(buildMessage(session, ctx));
-            session.removeAttribute(DECODER_STATE_KEY);
-            decoded = true;
-        }
-        return decoded;
+    private void markDone(IoSession session, ProtocolDecoderOutput out, DecoderCtx ctx) throws ISOException
+    {
+        out.write(buildMessage(ctx));
+        session.removeAttribute(DECODER_STATE_KEY);
     }
 
     private boolean isDataAvailable(IoBuffer in, int len)
@@ -130,14 +172,12 @@ public class DefaultISOMsgDecoder extends CumulativeProtocolDecoder implements P
         return in.remaining() >= len;
     }
 
-    private Object buildMessage(IoSession session, DecoderCtx ctx) throws ISOException
+    private Object buildMessage(DecoderCtx ctx) throws ISOException
     {
         ISOMsg m = protocolHandler.getPackager().createISOMsg();
-        m.setSource(new SessionISOSource(session));
         m.setPackager(protocolHandler.getPackager());
         m.setHeader(protocolHandler.getDynamicHeader(ctx.header));
         protocolHandler.unpack(m, ctx.payload);
-        m.setDirection(ISOMsg.INCOMING);
         return m;
     }
 }
