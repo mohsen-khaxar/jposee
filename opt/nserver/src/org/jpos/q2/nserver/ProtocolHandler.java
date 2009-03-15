@@ -18,7 +18,7 @@
 package org.jpos.q2.nserver;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.jpos.core.ReConfigurable;
+import org.jpos.core.Configurable;
 import org.jpos.iso.ISOException;
 import org.jpos.iso.ISOHeader;
 import org.jpos.iso.ISOMsg;
@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  * @author Victor Salaman (vsalaman@gmail.com)
  */
-public interface ProtocolHandler extends LogSource, ReConfigurable
+public interface ProtocolHandler extends LogSource, Configurable
 {
     void setPackager(ISOPackager packager);
 
