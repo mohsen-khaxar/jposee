@@ -21,7 +21,17 @@
      <property name="audit.facility" value="21" />
      <property name="audit.severity" value="4" />
   </log-listener>
+
+  <log-listener class="org.jpos.util.OperatorLogListener">
+   <property name="jpos.operator.from" value="noreply@jpos.org"  />
+   <property name="jpos.operator.to"             value="support@jpos.org" />
+   <property name="jpos.operator.subject.prefix" value="[jPOS] "   />
+   <property name="jpos.operator.tags"           value="commit abort exception error warn" />
+   <property name="jpos.operator.delay"          value="60000"            />
+   <property name="jpos.mail.smtp.host"          value="mail.jpos.org"    />
+  </log-listener>
   -->
+
 
   <log-listener class="org.jpos.util.RotateLogListener">
     <property name="file" value="log/q2.log" />
