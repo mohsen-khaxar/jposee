@@ -41,17 +41,7 @@ public class DefaultISOMsgEncoder extends ProtocolEncoderAdapter
     {
         if(msg instanceof ISOMsg)
         {
-            ISOMsg m = (ISOMsg) msg;
-            m.setPackager(protocolHandler.getPackager());
-            m.setDirection(ISOMsg.OUTGOING);
-            byte[] b = m.pack();
-            IoBuffer buffer = IoBuffer.allocate(b.length + protocolHandler.getHeaderLength() + 512);
-            protocolHandler.writeMessageLength(buffer, b.length);
-            protocolHandler.writeHeader(buffer, m);
-            protocolHandler.writePayload(buffer, b);
-            protocolHandler.writeTrailer(buffer, b);
-            buffer.flip();
-            out.write(buffer);
+            out.write(protocolHandler.writeMessage((ISOMsg)msg));
         }
         else if(msg instanceof NullMessage)
         {
