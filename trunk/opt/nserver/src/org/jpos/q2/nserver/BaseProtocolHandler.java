@@ -141,43 +141,68 @@ public abstract class BaseProtocolHandler implements ProtocolHandler
         return new byte[0];
     }
 
-    public void writeMessageLength(IoBuffer out, int len)
+    public IoBuffer writeMessage(ISOMsg m) throws ISOException
     {
-        if (isLengthEncoded())
-        {
-            int byteSize = getMessageLengthByteSize();
-            if (byteSize == 2)
-            {
-                out.putShort((short) len);
-            }
-            else if (byteSize == 4)
-            {
-                out.putInt(len);
-            }
-        }
+        m.setPackager(getPackager());
+        m.setDirection(ISOMsg.OUTGOING);
+        byte[] b = m.pack();
+        IoBuffer buffer = IoBuffer.allocate(b.length+64,true);
+        writeMessageLength(buffer, m, b.length);
+        writeHeader(buffer, m);
+        writePayload(buffer, b);
+        writeTrailer(buffer, b);
+        buffer.flip();
+        return buffer;
     }
 
-    public void writeHeader(IoBuffer out, ISOMsg m)
+    private byte[] getHeader(ISOMsg m)
     {
         if (containsHeader())
         {
             if (!overrideHeader && m.getHeader() != null)
             {
-                out.put(m.getHeader());
+                return m.getHeader();
             }
             else if (header != null)
             {
-                out.put(header);
+                return header;
+            }
+        }
+        return new byte[]{};
+    }
+
+    protected void writeMessageLength(IoBuffer out, ISOMsg m, int len)
+    {
+        int realHeaderLen=getHeader(m).length;
+        if (isLengthEncoded())
+        {
+            int byteSize = getMessageLengthByteSize();
+            if (byteSize == 2)
+            {
+                out.putShort((short)(len+realHeaderLen));
+            }
+            else if (byteSize == 4)
+            {
+                out.putInt(len+realHeaderLen);
             }
         }
     }
 
-    public void writePayload(IoBuffer out, byte[] b)
+    protected void writeHeader(IoBuffer out, ISOMsg m)
+    {
+        byte[] h=getHeader(m);
+        if(h.length>0)
+        {
+            out.put(h);
+        }
+    }
+
+    protected void writePayload(IoBuffer out, byte[] b)
     {
         out.put(b);
     }
 
-    public void writeTrailer(IoBuffer out, byte[] b)
+    protected void writeTrailer(IoBuffer out, byte[] b)
     {
     }
 

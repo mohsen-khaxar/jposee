@@ -62,13 +62,7 @@ public interface ProtocolHandler extends LogSource, Configurable
 
     ISOHeader getDynamicHeader(byte[] image);
 
-    void writeMessageLength(IoBuffer out, int len);
-
-    void writeHeader(IoBuffer out, ISOMsg msg);
-
-    void writePayload(IoBuffer out, byte[] b);
-
-    void writeTrailer(IoBuffer out, byte[] b);
+    IoBuffer writeMessage(ISOMsg msg) throws ISOException;
 
     public boolean isUseZeroLengthAsKeepalive();
 
