@@ -19,6 +19,7 @@ package org.jpos.q2.nserver.handler;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.jpos.iso.ISOException;
+import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.LogEvent;
 import org.jpos.util.Logger;
@@ -29,7 +30,7 @@ import org.jpos.util.Logger;
 public class NCCHandler extends NACHandler
 {
     @Override
-    public void writeMessageLength(IoBuffer out, int len)
+    public void writeMessageLength(IoBuffer out, ISOMsg m,int len)
     {
         try
         {
