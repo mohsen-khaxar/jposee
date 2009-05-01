@@ -143,14 +143,32 @@ public abstract class BaseProtocolHandler implements ProtocolHandler
 
     public IoBuffer writeMessage(ISOMsg m) throws ISOException
     {
+        //We setup our message and pack it.
         m.setPackager(getPackager());
         m.setDirection(ISOMsg.OUTGOING);
         byte[] b = m.pack();
+
+        //Let's create an auto-grow buffer that will initially hold msgbytes+64
         IoBuffer buffer = IoBuffer.allocate(b.length+64,true);
-        writeMessageLength(buffer, m, b.length);
+
+        //Let's create a dummy message len as as a placeholder
+        writeMessageLength(buffer, m, 0);
+        int startOffset=buffer.position();
+
+        //Fill buffer
         writeHeader(buffer, m);
         writePayload(buffer, b);
         writeTrailer(buffer, b);
+
+        int rmlen=buffer.position()-startOffset; // Real message size to put in message.
+
+        //Let's go back to start of buffer to replace dummy msg len.
+        int oldPos=buffer.position();
+        buffer.position(0);
+        writeMessageLength(buffer, m, rmlen);
+
+        //And prepare for a swift return.
+        buffer.position(oldPos);
         buffer.flip();
         return buffer;
     }
@@ -173,17 +191,16 @@ public abstract class BaseProtocolHandler implements ProtocolHandler
 
     protected void writeMessageLength(IoBuffer out, ISOMsg m, int len)
     {
-        int realHeaderLen=getHeader(m).length;
         if (isLengthEncoded())
         {
             int byteSize = getMessageLengthByteSize();
             if (byteSize == 2)
             {
-                out.putShort((short)(len+realHeaderLen));
+                out.putShort((short)(len));
             }
             else if (byteSize == 4)
             {
-                out.putInt(len+realHeaderLen);
+                out.putInt(len);
             }
         }
     }

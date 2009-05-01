@@ -18,6 +18,7 @@
 package org.jpos.q2.nserver.handler;
 
 import org.apache.mina.core.buffer.IoBuffer;
+import org.jpos.iso.ISOMsg;
 import org.jpos.q2.nserver.BaseProtocolHandler;
 
 /**
@@ -46,7 +47,7 @@ public class CSHandler extends BaseProtocolHandler
     }
 
     @Override
-    public void writeMessageLength(IoBuffer out, int len)
+    public void writeMessageLength(IoBuffer out, ISOMsg m,int len)
     {
         out.putShort((short) len);
         out.putShort((short) 0);
