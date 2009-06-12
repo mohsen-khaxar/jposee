@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2007 Alejandro P. Revilla
+ * Copyright (C) 2000-2009 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,7 +19,7 @@
 package org.jpos.ee;
 
 import org.jpos.iso.ISOUtil;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -54,10 +54,10 @@ public class EEUtil {
         return hash;
     }
     public static String getRandomHash () {
-        return getHash (
-            Double.toString (Math.random()),
-            Double.toString (Math.random())
-        );
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        byte[] bytes = new byte[16];
+        random.nextBytes(bytes);
+        return ISOUtil.hexString (bytes).toLowerCase();
     }
 }
 
