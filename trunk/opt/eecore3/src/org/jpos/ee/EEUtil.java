@@ -54,10 +54,18 @@ public class EEUtil {
         return hash;
     }
     public static String getRandomHash () {
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        byte[] bytes = new byte[16];
-        random.nextBytes(bytes);
-        return ISOUtil.hexString (bytes).toLowerCase();
+        try {
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            byte[] bytes = new byte[16];
+            random.nextBytes(bytes);
+            return ISOUtil.hexString (bytes).toLowerCase();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            // should not happen, but fall back anyway
+            return getHash (
+                Double.toString (Math.random()),
+                Double.toString (Math.random())
+            );
+        }
     }
 }
 
