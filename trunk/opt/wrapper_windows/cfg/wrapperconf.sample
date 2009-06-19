@@ -51,12 +51,12 @@ wrapper.java.classpath.25=lib/org.mortbay.jetty.jar
 wrapper.java.classpath.26=lib/jpos-1.6.0.jar
 wrapper.java.classpath.27=lib/jsp-api-5.0.16.jar
 wrapper.java.classpath.28=lib/jta.jar
-wrapper.java.classpath.29=lib/log4j-1.2.8.jar
+wrapper.java.classpath.29=lib/log4j-1.2.15.jar
 wrapper.java.classpath.30=lib/mx4j-2.0.1.jar
 wrapper.java.classpath.31=lib/jtds-1.2.jar
 wrapper.java.classpath.32=lib/odmg-3.0.jar
 wrapper.java.classpath.33=lib/javax.servlet.jar
-wrapper.java.classpath.34=lib/velocity-1.4-dev.jar
+wrapper.java.classpath.34=lib/velocity-1.6.2.jar
 wrapper.java.classpath.35=lib/xercesImpl-2.6.2.jar
 wrapper.java.classpath.36=lib/xwork-1.0.5.jar
 wrapper.java.classpath.37=lib/org.mortbay.jmx.jar
@@ -144,3 +144,4 @@ wrapper.ntservice.interactive=false
 
 #Set the working directory
 wrapper.working.dir=../
+
