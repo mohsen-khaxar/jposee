@@ -45,13 +45,14 @@
 <!ELEMENT param (#PCDATA) >
 <!ELEMENT layers (#PCDATA) >
 
-<!ELEMENT transaction (detail?,entry+) >
+<!ELEMENT transaction (detail?,tags?,entry+) >
 <!ATTLIST transaction date CDATA #REQUIRED>
 <!ATTLIST transaction post-date CDATA #REQUIRED>
 <!ATTLIST transaction journal CDATA #REQUIRED>
 <!ELEMENT detail (#PCDATA) >
+<!ELEMENT tags (#PCDATA) >
 
-<!ELEMENT entry (detail?,amount?) >
+<!ELEMENT entry (detail?,tags?,amount?) >
 <!ATTLIST entry account CDATA #REQUIRED>
 <!ATTLIST entry type (debit|credit) #REQUIRED>
 <!ATTLIST entry layer CDATA #IMPLIED>
