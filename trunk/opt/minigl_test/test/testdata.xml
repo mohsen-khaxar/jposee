@@ -151,13 +151,16 @@
 
  <transaction post-date="20050101" date="20050101130000" journal="TestJournal">
   <detail>Bob's initial deposit</detail>
+  <tags>tag1 tag2</tags>
  
   <entry account="111" type="debit">
    <detail>Bob Check #001 (USD layer 0)</detail>
+   <tags>the-debit</tags>
    <amount>10000.00</amount>
   </entry>
   <entry account="31" type="credit">
    <detail>Bob Initial cash (USD layer 0)</detail>
+   <tags>the-credit</tags>
    <amount>10000.00</amount>
   </entry>
   <!-- a Virtual entry in Layer 1 - trip fund -->

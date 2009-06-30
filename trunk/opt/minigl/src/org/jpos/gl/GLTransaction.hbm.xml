@@ -10,6 +10,7 @@
     </id>
 
     <property name="detail" type="string" />
+    <property name="tags"   type="string" />
     <property name="timestamp" type="timestamp">
      <column name="timestamp" sql-type="timestamp" not-null="true" 
         index="timestamp"/>

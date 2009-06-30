@@ -43,6 +43,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 public class GLEntry {
     private long id;
     private String detail;
+    private String tags;
     private boolean credit;
     private short layer;
     private BigDecimal amount;
@@ -129,6 +130,20 @@ public class GLEntry {
         return detail;
     }
     /**
+     * Tags.
+     * @param tags transaction tags
+     */
+    public void setTags (String tags) {
+        this.tags = tags;
+    }
+    /**
+     * Tags.
+     * @return transaction tags
+     */
+    public String getTags () {
+        return tags;
+    }
+    /**
      * Credit.
      * calling setCredit(true) automatically sets <code>debit</code> to false.
      * @param credit true if this GLEntry is a credit.
@@ -207,8 +222,8 @@ public class GLEntry {
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
      */
     public void fromXML (Element elem) throws ParseException {
-        setDetail (elem.getChild ("detail").getText());
-
+        setDetail (elem.getChildTextTrim ("detail"));
+        setTags   (elem.getChildTextTrim ("tags"));
         setCredit ("credit".equals (elem.getAttributeValue ("type")));
         setLayer (elem.getAttributeValue ("layer"));
         setAmount (new BigDecimal (elem.getChild ("amount").getText()));
@@ -222,6 +237,10 @@ public class GLEntry {
         if (getDetail() != null) {
             Element detail = new Element ("detail").setText (getDetail());
             elem.addContent (detail);
+        }
+        if (getTags () != null) {
+            Element tags = new Element ("tags").setText (getDetail());
+            elem.addContent (tags);
         }
         elem.setAttribute ("account", getAccount().getCode());
         elem.setAttribute ("type", isCredit() ? "credit" : "debit");

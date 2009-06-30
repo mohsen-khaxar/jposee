@@ -46,6 +46,7 @@ public class GLTransaction {
     private Date timestamp;
     private Date postDate;
     private String detail;
+    private String tags;
     private List children;
     private Journal journal;
     List entries;
@@ -122,6 +123,20 @@ public class GLTransaction {
      */
     public String getDetail () {
         return detail;
+    }
+    /**
+     * Tags.
+     * @param tags transaction tags
+     */
+    public void setTags (String tags) {
+        this.tags = tags;
+    }
+    /**
+     * Tags.
+     * @return transaction tags
+     */
+    public String getTags () {
+        return tags;
     }
     /**
      * Entries.
@@ -289,6 +304,7 @@ public class GLTransaction {
      */
     public void fromXML (Element elem) throws ParseException {
         setDetail (elem.getChildTextTrim ("detail"));
+        setTags   (elem.getChildTextTrim ("tags"));
         setPostDate (
             Util.parseDate (elem.getAttributeValue ("post-date"))
         );
@@ -309,6 +325,10 @@ public class GLTransaction {
         if (getDetail() != null) {
             Element detail = new Element ("detail").setText (getDetail());
             elem.addContent (detail);
+        }
+        if (getTags () != null) {
+            Element tags = new Element ("tags").setText (getDetail());
+            elem.addContent (tags);
         }
         elem.setAttribute ("journal", getJournal().getName());
 
