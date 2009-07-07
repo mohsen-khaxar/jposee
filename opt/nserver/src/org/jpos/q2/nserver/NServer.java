@@ -150,7 +150,19 @@ public class NServer extends QBeanSupport implements NServerMBean, IoHandler
         acceptor.setDefaultLocalAddress(socketAddress);
         acceptor.setHandler(this);
         acceptor.getSessionConfig().setReadBufferSize(2048);
+        preBindAcceptorHook(acceptor);
         acceptor.bind();
+    }
+
+    /**
+     * Hook method invoked just before the acceptor is bound. This is uselful for things such as adding filters (e.g. SSL).
+     *
+     * @param acceptor the socket acceptor to be used.
+     * @throws Exception generic exception.
+     */
+    @SuppressWarnings({"UnusedDeclaration"})
+    protected void preBindAcceptorHook(NioSocketAcceptor acceptor) throws Exception
+    {
     }
 
     @Override
