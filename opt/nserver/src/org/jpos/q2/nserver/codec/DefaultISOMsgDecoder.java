@@ -174,7 +174,7 @@ public class DefaultISOMsgDecoder extends CumulativeProtocolDecoder implements P
 
     private Object buildMessage(DecoderCtx ctx) throws ISOException
     {
-        ISOMsg m = protocolHandler.getPackager().createISOMsg();
+        ISOMsg m = protocolHandler.createISOMsg();
         m.setPackager(protocolHandler.getPackager());
         m.setHeader(protocolHandler.getDynamicHeader(ctx.header));
         protocolHandler.unpack(m, ctx.payload);
