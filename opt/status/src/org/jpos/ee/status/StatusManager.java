@@ -89,7 +89,7 @@ public class StatusManager {
         Date now = new Date();
 
         String previousState = status.getState();
-        if (status.getMaxEvents() > 0 && previousState != null && !state.equals (previousState)) {
+        if ((status.getMaxEvents() > 0 || status.getMaxEvents() == -1 ) && previousState != null && !state.equals (previousState)) {
             Set events = status.getEvents();
             if (events != null) {
                 purgeEvents (events, status.getMaxEvents());
@@ -199,7 +199,7 @@ public class StatusManager {
     {
         Transaction tx = db.beginTransaction();
         Status status = getStatus (id, false);
-        if (status != null && status.getCommand() != null && response != null && status.getMaxEvents() > 0) {
+        if (status != null && status.getCommand() != null && response != null && (status.getMaxEvents() > 0 || status.getMaxEvents() == -1  )) {
             Set events = status.getEvents();
             if (events != null) { 
                 purgeEvents (events, status.getMaxEvents());
@@ -250,7 +250,7 @@ public class StatusManager {
                 }
                 Set events = status.getEvents();
                 purgeEvents (events, status.getMaxEvents());
-                if (status.getMaxEvents() > 0) {
+                if (status.getMaxEvents() > 0 || status.getMaxEvents() == -1) {
                     events.add (
                         syslog.log (
                             "status:" + status.getId(), state, 
@@ -286,11 +286,13 @@ public class StatusManager {
         return q.list();
     }
     private void purgeEvents (Set events, int maxEvents) {
-        int rmcount = events.size() - maxEvents + 1;
-        Iterator iter = events.iterator();
-        for (; rmcount > 0 && iter.hasNext(); rmcount--) {
-            iter.next();
-            iter.remove ();
+        if (maxEvents > 0) { 
+            int rmcount = events.size() - maxEvents + 1;
+            Iterator iter = events.iterator();
+            for (; rmcount > 0 && iter.hasNext(); rmcount--) {
+                iter.next();
+                iter.remove ();
+            }
         }
     }
 }
