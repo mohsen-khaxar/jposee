@@ -132,6 +132,7 @@
         <fileset dir="${build.modules}" excludesfile="${modules.ignore.list}">
           <include name="**/deploy/*.xml"/>
           <include name="**/deploy/*.inc"/>
+          <include name="**/deploy/*.ftl"/>
         </fileset>
       </copy>
       <copy todir="${build.lib}" flatten="true">
