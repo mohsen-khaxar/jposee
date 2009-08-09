@@ -1,0 +1,20 @@
+<cluster>
+	<name>vdmspace</name>
+	<server>
+		<id>0</id>
+		<host>localhost</host>
+		<http-port>8081</http-port>
+		<socket-port>6666</socket-port>
+		<admin-port>6660</admin-port>
+		<partitions>0, 1, 2, 3</partitions>
+	</server>
+	<server>
+		<id>1</id>
+		<host>localhost</host>
+		<http-port>8082</http-port>
+		<socket-port>6667</socket-port>
+		<admin-port>6661</admin-port>
+		<partitions>4, 5, 6, 7</partitions>
+	</server>
+</cluster>
+
