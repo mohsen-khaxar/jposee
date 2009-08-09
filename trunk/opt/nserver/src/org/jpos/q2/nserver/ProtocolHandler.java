@@ -18,9 +18,10 @@
 package org.jpos.q2.nserver;
 
 import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.jpos.core.Configurable;
 import org.jpos.iso.ISOException;
-import org.jpos.iso.ISOHeader;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOPackager;
 import org.jpos.util.LogSource;
@@ -34,37 +35,11 @@ import java.io.IOException;
  */
 public interface ProtocolHandler extends LogSource, Configurable
 {
-    void setPackager(ISOPackager packager);
+    DecoderCtx newDecoderContext();
 
-    ISOPackager getPackager();
-
-    int getMaxPacketLength();
-
-    ISOMsg createISOMsg();
-
-    boolean isLengthEncoded();
-
-    boolean containsHeader();
-
-    int readMessageLength(IoBuffer in);
-
-    int getHeaderLength();
-
-    int getMessageLengthByteSize();
-
-    void unpack(ISOMsg msg, byte[] b) throws ISOException;
-
-    byte[] readHeader(IoBuffer in, int len);
-
-    byte[] readPayload(IoBuffer in, int len);
-
-    byte[] readStream(IoBuffer in) throws IOException;
-
-    ISOHeader getDynamicHeader(byte[] image);
+    boolean handleIncomingData(DecoderCtx ctx,IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception;
 
     IoBuffer writeMessage(ISOMsg msg) throws ISOException;
 
-    public boolean isUseZeroLengthAsKeepalive();
-
-    public void setUseZeroLengthAsKeepalive(boolean useZeroLengthAsKeepalive);
+    void setPackager(ISOPackager packager);
 }

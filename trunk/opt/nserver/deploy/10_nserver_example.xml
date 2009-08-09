@@ -26,7 +26,7 @@
     <attr name="port" type="java.lang.Integer">2005</attr>
 
     <protocol-handler
-            class="org.jpos.q2.nserver.handler.AthHandler"
+            class="org.jpos.q2.nserver.handler.BASE24TCPHandler"
             packager="org.jpos.iso.packager.GenericPackager">
         <property name="packager-config" value="cfg/packager/ath.xml"/>
     </protocol-handler>

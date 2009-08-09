@@ -19,11 +19,12 @@ package org.jpos.q2.nserver.handler;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.jpos.q2.nserver.BaseProtocolHandler;
+import org.jpos.iso.ISOMsg;
 
 /**
  * @author Victor Salaman (vsalaman@gmail.com)
  */
-public class AthHandler extends BaseProtocolHandler
+public class BASE24TCPHandler extends BaseProtocolHandler
 {
     @Override
     public int getMessageLengthByteSize()
@@ -35,6 +36,24 @@ public class AthHandler extends BaseProtocolHandler
     public int getHeaderLength()
     {
         return 12;
+    }
+
+    @Override
+    protected int getTrailerLength()
+    {
+        return 1;
+    }
+
+    @Override
+    protected void writeMessageLength(IoBuffer out, ISOMsg m, int len)
+    {
+        super.writeMessageLength(out, m, len+1);
+    }
+
+    @Override
+    protected int readMessageLength(IoBuffer in)
+    {
+        return super.readMessageLength(in)-1;
     }
 
     @Override
