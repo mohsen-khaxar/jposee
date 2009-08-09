@@ -3,6 +3,7 @@
 cd `dirname $0`/../build || exit 1
 rm -f deploy/shutdown.xml
 java -server \
+    -Xmx1G \
     -Dorg.mortbay.xml.XmlParser.NotValidating=true \
     -jar jpos-ee.jar "$*"
 

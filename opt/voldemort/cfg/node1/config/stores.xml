@@ -1,0 +1,25 @@
+<stores>
+  <store>
+    <name>vdmspace</name>
+    <persistence>bdb</persistence>
+    <routing>client</routing>
+    <replication-factor>2</replication-factor>
+    <required-reads>1</required-reads>
+    <required-writes>1</required-writes>
+    <preferred-writes>2</preferred-writes>
+    <key-serializer>
+      <type>java-serialization</type>
+      <!--
+      <type>json</type>
+      <schema-info>"string"</schema-info>
+      -->
+    </key-serializer>
+    <value-serializer>
+      <type>java-serialization</type>
+      <!--
+      <type>json</type>
+      <schema-info>"string"</schema-info>
+      -->
+    </value-serializer>
+  </store>
+</stores>
