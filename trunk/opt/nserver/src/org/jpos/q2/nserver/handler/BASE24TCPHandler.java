@@ -45,15 +45,9 @@ public class BASE24TCPHandler extends BaseProtocolHandler
     }
 
     @Override
-    protected void writeMessageLength(IoBuffer out, ISOMsg m, int len)
-    {
-        super.writeMessageLength(out, m, len+1);
-    }
-
-    @Override
     protected int readMessageLength(IoBuffer in)
     {
-        return super.readMessageLength(in)-1;
+        return super.readMessageLength(in)-getTrailerLength();
     }
 
     @Override
