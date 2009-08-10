@@ -75,7 +75,10 @@
          manifest="${classes.dir}/MANIFEST.MF" 
 	 includes="**" />
     </target>
-
+    <target name="srcjar" depends="modules"
+        description="creates jpos-src.jar for source browsing and debugging in IDEs">
+      <jar jarfile="${build.dir}/${name}-src.jar" basedir="${build.src}" includes="**" />
+    </target>
     <target name="singlejar" depends="unjar, jar"
      description="creates a single jpos-ee.jar including all supporting jars" />
 
@@ -304,6 +307,8 @@ Sealed: false</concat>
            forkmode="perBatch"
            failureproperty="junit.failure" errorproperty="junit.error"
            haltonerror="no">
+       <jvmarg value="-Xmx1G"  />
+       <jvmarg value="-Dcom.sun.management.jmxremote" />
        <classpath>
          <pathelement location="${test-classes.dir}" />
          <pathelement location="${classes.dir}" />
