@@ -1,0 +1,7 @@
+<vdmspace class="org.jpos.space.VoldemortSpaceAdaptor" logger="Q2">
+ <property name="space"  value="vdm:space" />
+ <property name="url"    value="tcp://localhost:6666" />
+ <property name="store"  value="vdmspace" />
+ <property name="garbage-collector" value="true" />
+</vdmspace>
+

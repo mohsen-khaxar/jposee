@@ -1,0 +1,5 @@
+<qbean name='voldemort-node-0' logger='Q2'
+    class='org.jpos.voldemort.VoldemortServerAdaptor'>
+    <property name='config' value='../cfg/node0' />
+</qbean>
+
