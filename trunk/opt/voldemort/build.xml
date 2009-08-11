@@ -1,0 +1,20 @@
+<project name="jPOS-EE-voldemort" basedir="../..">
+ <property file="build.properties"/>
+ <property name="build.lib" value="${build.dir}/lib"/>
+
+ <path id="main.classpath">
+   <fileset dir="${build.lib}">
+     <include name="*.jar"/>
+   </fileset>
+   <pathelement location="${classes.dir}"/>
+ </path>
+ <target name="prepare">
+   <condition property="deps-ok">
+       <available 
+           classpathref="main.classpath" 
+           classname="org.apache.log4j.Logger" />
+  </condition>
+  <fail unless="deps-ok">Missing required jPOS-EE module 'commons' (available in the 'opt' directory)</fail>
+ </target>
+</project>
+
