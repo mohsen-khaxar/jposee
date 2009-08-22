@@ -65,7 +65,7 @@ public abstract class Account implements Serializable, Comparable {
     String currencyCode;
     int type;
 
-    Account parent, root;
+    CompositeAccount parent, root;
 
     /**
      * Default constructor.
@@ -153,14 +153,14 @@ public abstract class Account implements Serializable, Comparable {
      * 
      * @return parent account (null if this account is the toplevel root)
      */
-    public Account getParent () {
+    public CompositeAccount getParent () {
         return parent;
     }
     /**
      * Parent Account.
      * @param parent parent account (null if this account is the toplevel root)
      */
-    public void setParent (Account parent) {
+    public void setParent (CompositeAccount parent) {
         this.parent = parent;
     }
     /**
@@ -169,7 +169,7 @@ public abstract class Account implements Serializable, Comparable {
      * representing a Chart of Accounts.
      * @return root account.
      */
-    public Account getRoot () {
+    public CompositeAccount getRoot () {
         return root;
     }
     /**
@@ -177,7 +177,7 @@ public abstract class Account implements Serializable, Comparable {
      *
      * @param root root account.
      */
-    public void setRoot (Account root) {
+    public void setRoot (CompositeAccount root) {
         this.root = root;
     }
 

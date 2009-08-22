@@ -312,7 +312,7 @@ public class GLSession {
         }
         acct.setRoot (parent.getRoot());
         session.save (acct);
-        // acct.setParent (parent);
+        acct.setParent (parent);
         parent.getChildren().add (acct);
     }
     /**

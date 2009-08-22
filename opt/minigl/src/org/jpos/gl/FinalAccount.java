@@ -37,7 +37,7 @@ public class FinalAccount extends Account {
     public FinalAccount () {
         super ();
     }
-    public FinalAccount (Element elem, Account parent) throws ParseException {
+    public FinalAccount (Element elem, CompositeAccount parent) throws ParseException {
         super ();
         setParent (parent);
         fromXML (elem);

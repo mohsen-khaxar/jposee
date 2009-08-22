@@ -47,7 +47,7 @@ public class CompositeAccount extends Account {
         setParent (parent);
         fromXML (elem);
     }
-    public CompositeAccount (Element elem, Account parent) 
+    public CompositeAccount (Element elem, CompositeAccount parent) 
         throws ParseException 
     {
         super ();
@@ -63,7 +63,9 @@ public class CompositeAccount extends Account {
         return children;
     }
     public Element toXML () {
-        Element elem = super.toXML (new Element ("composite-account"));
+        String tagName = getParent() == null ? 
+            "chart-of-accounts" : "composite-account";
+        Element elem = super.toXML (new Element (tagName));
         Iterator iter = getChildren().iterator();
         while (iter.hasNext()) {
             Account acct = (Account) iter.next();
