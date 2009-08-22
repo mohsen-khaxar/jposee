@@ -22,7 +22,6 @@
 <!ELEMENT chart-of-accounts (description?,composite-account*,account*) >
 <!ATTLIST chart-of-accounts code CDATA #REQUIRED>
 <!ATTLIST chart-of-accounts created CDATA #IMPLIED>
-<!ATTLIST chart-of-accounts currency CDATA #REQUIRED>
 <!ELEMENT description (#PCDATA) >
 
 <!ELEMENT composite-account (description?,(account|composite-account)*) >
