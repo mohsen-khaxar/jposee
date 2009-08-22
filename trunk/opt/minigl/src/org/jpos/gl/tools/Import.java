@@ -174,7 +174,7 @@ public class Import implements EntityResolver {
         sess.flush ();
     }
     private void processChartChildren 
-        (Session sess, Account parent, Iterator iter) 
+        (Session sess, CompositeAccount parent, Iterator iter) 
             throws SQLException, HibernateException, ParseException
     {
         while (iter.hasNext ()) {
@@ -187,7 +187,7 @@ public class Import implements EntityResolver {
         }
     }
 
-    private void createComposite (Session sess, Account parent, Element elem) 
+    private void createComposite (Session sess, CompositeAccount parent, Element elem) 
         throws SQLException, HibernateException, ParseException
     {
         CompositeAccount acct = new CompositeAccount (elem, parent);
@@ -199,7 +199,7 @@ public class Import implements EntityResolver {
         processChartChildren (sess, acct, elem.getChildren().iterator());
     }
 
-    private void createFinal (Session sess, Account parent, Element elem) 
+    private void createFinal (Session sess, CompositeAccount parent, Element elem) 
         throws SQLException, HibernateException, ParseException
     {
         FinalAccount acct = new FinalAccount (elem, parent);

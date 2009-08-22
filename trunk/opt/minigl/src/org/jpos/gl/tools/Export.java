@@ -75,7 +75,7 @@ public class Export {
         throws SQLException, HibernateException
     {
         Document doc = new Document ();
-        doc.setDocType (new DocType ("minigl", "http://jpos.org/minigl.dtd"));
+        doc.setDocType (new DocType ("minigl", "http://jpos.org/dtd/minigl.dtd"));
         Element root = new Element ("minigl");
         root.addContent (
             new Comment (
