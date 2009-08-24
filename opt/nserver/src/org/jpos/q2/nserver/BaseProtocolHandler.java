@@ -134,7 +134,7 @@ public abstract class BaseProtocolHandler implements ProtocolHandler
 
     public boolean handleIncomingData(DecoderCtx ctx,IoSession session, IoBuffer in, ProtocolDecoderOutput out) throws Exception
     {
-        while(in.remaining()>0)
+        while(ctx.stage!=DecoderCtx.STAGE_MSG_DONE)
         {
             switch(ctx.stage)
             {
