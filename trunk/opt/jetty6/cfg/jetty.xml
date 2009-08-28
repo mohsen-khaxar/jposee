@@ -73,6 +73,41 @@
     <!-- see jetty-ssl.xml to add an ssl connector. use                  -->
     <!-- java -jar start.jar etc/jetty.xml etc/jetty-ssl.xml             -->
     <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+
+
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+    <!-- SSL Listener with test keystore listening on port 8443          -->
+    <!-- Configured to exclude weak SSL Ciphers	                         -->
+    <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+     <!--
+     SSL Keystore generated with the following command:
+     $ keytool -keystore keystore.ks -alias jetty -genkey -keyalg RSA -validity 5000 -keysize 1024
+     -->
+     
+     <Call name="addConnector">
+     	<Arg>
+            <New class="org.mortbay.jetty.security.SslSocketConnector">
+                <Set name="Port">8443</Set>
+                <Set name="maxIdleTime">30000</Set>
+                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/cfg/keystore.ks</Set>
+                <Set name="password">jposjposjposjpos</Set>
+                <Set name="keyPassword">jposjposjposjpos</Set>
+		<Set name="ExcludeCipherSuites">
+		    <Array type="java.lang.String">
+		        <Item>SSL_DHE_RSA_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_DHE_DSS_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_RSA_EXPORT_WITH_RC4_40_MD5</Item>
+		        <Item>SSL_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+		        <Item>SSL_RSA_WITH_DES_CBC_SHA</Item>
+		        <Item>SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA</Item>
+		        <Item>SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA</Item>
+		    </Array>
+                </Set>
+  	    </New>
+         </Arg>
+     </Call>
+
     
     <!-- =========================================================== -->
     <!-- Set up global session ID manager                            -->
