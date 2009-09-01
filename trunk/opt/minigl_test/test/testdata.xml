@@ -38,7 +38,7 @@
   <name>Pesos uruguayos</name>
  </currency>
 
- <chart-of-accounts code="TestChart" created="20050101" currency="840">
+ <chart-of-accounts code="TestChart" created="20050101">
   <description>Test Chart</description>
   <composite-account code="1" type="debit" >
    <description>Assets</description>
