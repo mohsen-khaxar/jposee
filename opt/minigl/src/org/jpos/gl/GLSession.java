@@ -44,7 +44,7 @@ import org.hibernate.ScrollableResults;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Expression;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.type.LongType;
 import org.hibernate.Hibernate;
@@ -582,18 +582,18 @@ would delete former transactions.
                 end   = Util.ceil (end);
         }
         Criteria crit = session.createCriteria (GLTransaction.class)
-            .add (Expression.eq ("journal", journal));
+            .add (Restrictions.eq ("journal", journal));
 
         if (start != null && start.equals (end))
-            crit.add (Expression.eq (dateField, start));
+            crit.add (Restrictions.eq (dateField, start));
         else {
             if (start != null) 
-                crit.add (Expression.ge (dateField, start));
+                crit.add (Restrictions.ge (dateField, start));
             if (end != null) 
-                crit.add (Expression.le (dateField, end));
+                crit.add (Restrictions.le (dateField, end));
         }
         if (searchString != null)
-            crit.add (Expression.like ("detail", "%" + searchString + "%"));
+            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
 
         if (pageSize > 0 && pageNumber > 0) {
             crit.setMaxResults (pageSize);
@@ -765,24 +765,24 @@ would delete former transactions.
         }
         else if (acct instanceof FinalAccount) {
             Criteria crit = session.createCriteria (GLEntry.class)
-                .add (Expression.eq ("account", acct))
-                .add (Expression.in ("layer", toShortArray (layers)));
+                .add (Restrictions.eq ("account", acct))
+                .add (Restrictions.in ("layer", toShortArray (layers)));
             crit = crit.createCriteria ("transaction")
-                    .add (Expression.eq ("journal", journal));
+                    .add (Restrictions.eq ("journal", journal));
             if (date != null) {
                 if (inclusive) {
-                    crit.add (Expression.lt ("postDate", Util.tomorrow (date)));
+                    crit.add (Restrictions.lt ("postDate", Util.tomorrow (date)));
                 }
                 else {
                     date = Util.floor (date);
-                    crit.add (Expression.lt ("postDate", date));
+                    crit.add (Restrictions.lt ("postDate", date));
                 }
             }
             Checkpoint chkp = 
                 getRecentCheckpoint (journal, acct, date, inclusive, layers);
             if (chkp != null) {
                 balance[0] = chkp.getBalance();
-                crit.add (Expression.gt ("postDate", chkp.getDate()));
+                crit.add (Restrictions.gt ("postDate", chkp.getDate()));
             }
             List l = crit.list();
             balance[0] = applyEntries (balance[0], l);
@@ -808,12 +808,12 @@ would delete former transactions.
         start = Util.floor (start);
         end   = Util.ceil (end);
         Criteria crit = session.createCriteria (GLEntry.class)
-            .add (Expression.eq ("account", acct))
-            .add (Expression.in ("layer", toShortArray (layers)));
+            .add (Restrictions.eq ("account", acct))
+            .add (Restrictions.in ("layer", toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
-            .add (Expression.eq ("journal", journal))
-            .add (Expression.ge ("postDate", start))
-            .add (Expression.le ("postDate", end));
+            .add (Restrictions.eq ("journal", journal))
+            .add (Restrictions.ge ("postDate", start))
+            .add (Restrictions.le ("postDate", end));
 
         BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers);
         List entries = crit.list();
@@ -839,17 +839,17 @@ would delete former transactions.
         checkPermission (GLPermission.CHECKPOINT, journal);
 
         Criteria crit = session.createCriteria (Checkpoint.class)
-            .add (Expression.eq ("journal", journal))
-            .add (Expression.eq ("account", acct));
+            .add (Restrictions.eq ("journal", journal))
+            .add (Restrictions.eq ("account", acct));
 
         if (layers != null)
-           crit.add (Expression.eq ("layers", layersToString(layers)));
+           crit.add (Restrictions.eq ("layers", layersToString(layers)));
 
         if (date != null) {
            if (inclusive)
-               crit.add (Expression.le ("date", date));
+               crit.add (Restrictions.le ("date", date));
            else
-               crit.add (Expression.lt ("date", date));
+               crit.add (Restrictions.lt ("date", date));
         }
         crit.addOrder (Order.desc ("date"));
         crit.setMaxResults (1); 
@@ -969,7 +969,7 @@ would delete former transactions.
     public GLUser getUser (String nick) throws HibernateException
     {
         return (GLUser) session.createCriteria (GLUser.class)
-                .add (Expression.eq ("nick", nick))
+                .add (Restrictions.eq ("nick", nick))
                 .uniqueResult();
     }
     /**
@@ -1080,17 +1080,17 @@ would delete former transactions.
         throws HibernateException
     {
         Criteria crit = session.createCriteria (Checkpoint.class)
-            .add (Expression.eq ("journal", journal))
-            .add (Expression.in ("account", accounts));
+            .add (Restrictions.eq ("journal", journal))
+            .add (Restrictions.in ("account", accounts));
 
         if (layers != null)
-            crit.add (Expression.eq ("layers", layersToString(layers)));
+            crit.add (Restrictions.eq ("layers", layersToString(layers)));
         if (start.equals (end))
-            crit.add (Expression.eq ("date", start));
+            crit.add (Restrictions.eq ("date", start));
         else {
-            crit.add (Expression.ge ("date", start));
+            crit.add (Restrictions.ge ("date", start));
             if (end != null) {
-                crit.add (Expression.le ("date", end));
+                crit.add (Restrictions.le ("date", end));
             }
         }
         Iterator iter = crit.list().iterator();
