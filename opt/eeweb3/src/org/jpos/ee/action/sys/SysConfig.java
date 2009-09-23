@@ -35,7 +35,6 @@ import org.jpos.ee.SysLog;
 import org.jpos.ee.Visitor;
 import org.jpos.ee.Permission;
 import org.jpos.ee.BLException;
-import org.jpos.ee.status.StatusManager;
 import org.jpos.util.DateUtil;
 import org.jpos.util.Validator;
 import org.hibernate.Query;
