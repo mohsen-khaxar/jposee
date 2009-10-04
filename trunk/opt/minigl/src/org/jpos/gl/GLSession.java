@@ -20,9 +20,7 @@
 package org.jpos.gl;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.Date;
-import java.util.Calendar;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,9 +43,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.type.LongType;
-import org.hibernate.Hibernate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jpos.ee.DB;
@@ -67,13 +63,7 @@ public class GLSession {
     private long checkpoint;
     private DB db;
     public static final short[] LAYER_ZERO = new short[] { 0 };
-    /** 
-     * "0.00"
-     */
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
-    /** 
-     * "0" (no decimals)
-     */
     public static final BigDecimal Z    = new BigDecimal ("0");
 
     static {
@@ -107,7 +97,7 @@ public class GLSession {
     /**
      * Construct a GLSession using property <code>user.name</code>.
      * User has to exist in MiniGL gluser table.
-     * @see User
+     * @see GLUser
      */
     public GLSession () throws HibernateException, GLException {
         this (System.getProperty ("user.name"));
@@ -137,7 +127,7 @@ public class GLSession {
      * Construct a GLSession using property <code>user.name</code>.
      * User has to exist in MiniGL gluser table.
      * @param db EE DB
-     * @see User
+     * @see GLUser
      */
     public GLSession (DB db) throws HibernateException, GLException {
         this (db, System.getProperty ("user.name"));
@@ -286,7 +276,7 @@ public class GLSession {
      *
      * @param parent parent account
      * @param acct account to add
-     * @throws HibernateException
+     * @throws HibernateException on error
      * @throws GLException if user doesn't have permissions, or type mismatch
      */
     public void addAccount (CompositeAccount parent, Account acct) 
@@ -606,8 +596,6 @@ would delete former transactions.
      * @param journal the journal.
      * @param start date (inclusive).
      * @param end date (inclusive).
-     * @param destinationJournal where to move former transactions. A null value
-would delete former transactions.
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @return list of transactions
@@ -642,7 +630,7 @@ would delete former transactions.
      * Current Balance for account in a given journal.
      * @param journal the journal.
      * @param acct the account.
-     * @param layers the layers.
+     * @param layer the layers.
      * @return current balance.
      * @throws GLException if user doesn't have READ permission on this jounral.
      */
