@@ -15,8 +15,8 @@
      <column name="timestamp" sql-type="timestamp" not-null="true" 
         index="timestamp"/>
     </property>
-    <property name="postDate"  type="date">
-     <column name="postDate" sql-type="date" not-null="false" 
+    <property name="postDate"  type="timestamp">
+     <column name="postDate" sql-type="timestamp" not-null="false"
         index="postDate"/>
     </property>
 
