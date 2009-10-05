@@ -9,7 +9,7 @@
      Journal level account Checkpoint.
     </meta>
     <composite-id>
-     <key-property name="date" type="date" />
+     <key-property name="date" type="timestamp" />
      <key-property name="layers" type="string" length="32" />
      <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
      <key-many-to-one name="account" class="org.jpos.gl.Account" />
