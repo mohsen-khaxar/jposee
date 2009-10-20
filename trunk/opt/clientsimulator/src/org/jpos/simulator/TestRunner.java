@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.Map;
 import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -255,7 +256,7 @@ public class TestRunner
                 }
             }
         }
-        if (!(new String(c.pack())).equals(new String(expected.pack()))) {
+        if (!Arrays.equals (c.pack(), expected.pack())) {
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }
