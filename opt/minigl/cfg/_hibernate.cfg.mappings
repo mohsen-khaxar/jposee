@@ -8,6 +8,7 @@
         <mapping resource="org/jpos/gl/GLEntry.hbm.xml"/>
         <mapping resource="org/jpos/gl/RuleInfo.hbm.xml"/>
         <mapping resource="org/jpos/gl/Checkpoint.hbm.xml"/>
+        <mapping resource="org/jpos/gl/BalanceCache.hbm.xml"/>
         <mapping resource="org/jpos/gl/AccountLock.hbm.xml"/>
         <mapping resource="org/jpos/gl/Layer.hbm.xml"/>
 
