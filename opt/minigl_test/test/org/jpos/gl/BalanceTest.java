@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import java.math.BigDecimal;
 import java.util.Date;
+import org.hibernate.Transaction;
 
 public class BalanceTest extends TestBase {
     Journal tj;
@@ -89,6 +90,11 @@ public class BalanceTest extends TestBase {
     }
     public void testBalancesAfterCheckpoint() throws Exception {
         checkBalancesByPostDate();
+    }
+    public void testBalanceCache() throws Exception {
+        final Transaction tx1 = gls.beginTransaction();
+        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
+        tx1.commit ();
     }
     public void testAccountDetailCashUS() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
