@@ -81,6 +81,8 @@ public class GLSession {
      * @see GLUser
      *
      * @param username the user name.
+     * @throws org.hibernate.HibernateException on database problems
+     * @throws GLException if user is not valid
      */
     public GLSession (String username) 
         throws HibernateException, GLException
@@ -98,6 +100,8 @@ public class GLSession {
      * Construct a GLSession using property <code>user.name</code>.
      * User has to exist in MiniGL gluser table.
      * @see GLUser
+     * @throws org.hibernate.HibernateException on database problems
+     * @throws GLException if user.name is not valid
      */
     public GLSession () throws HibernateException, GLException {
         this (System.getProperty ("user.name"));
@@ -549,8 +553,6 @@ public class GLSession {
      * @param journal the journal.
      * @param start date (inclusive).
      * @param end date (inclusive).
-     * @param destinationJournal where to move former transactions. A null value
-would delete former transactions.
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @param pageNumber the page number
@@ -637,7 +639,7 @@ would delete former transactions.
     public BigDecimal getBalance (Journal journal, Account acct, short layer) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, null, true, new short[] { layer }) [0];
+        return getBalances (journal, acct, null, true, new short[] { layer }, 0L) [0];
     }
     /**
      * Current Balance for account in a given journal.
@@ -650,7 +652,7 @@ would delete former transactions.
     public BigDecimal getBalance (Journal journal, Account acct, short[] layers) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, null, true, layers) [0];
+        return getBalances (journal, acct, null, true, layers, 0L) [0];
     }
     /**
      * Current Balance for account in a given journal.
@@ -663,7 +665,7 @@ would delete former transactions.
     public BigDecimal getBalance (Journal journal, Account acct, String layers) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, null, true, toLayers(layers)) [0];
+        return getBalances (journal, acct, null, true, toLayers(layers), 0L) [0];
     }
     /**
      * Balance for account in a given journal in a given date.
@@ -683,14 +685,14 @@ would delete former transactions.
      * @param journal the journal.
      * @param acct the account.
      * @param date date (inclusive).
-     * @param layers layers
+     * @param layer layer
      * @return balance at given date.
      * @throws GLException if user doesn't have READ permission on this jounral.
      */
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short layer) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, date, true, new short[] { layer }) [0];
+        return getBalances (journal, acct, date, true, new short[] { layer }, 0L) [0];
     }
     /**
      * Balance for account in a given journal in a given date.
@@ -704,7 +706,7 @@ would delete former transactions.
     public BigDecimal getBalance (Journal journal, Account acct, Date date, short[] layers) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, date, true, layers) [0];
+        return getBalances (journal, acct, date, true, layers, 0L) [0];
     }
     /**
      * Get Both Balances at given date
@@ -719,7 +721,7 @@ would delete former transactions.
         (Journal journal, Account acct, Date date, boolean inclusive) 
         throws HibernateException, GLException
     {
-        return getBalances (journal, acct, date, inclusive, LAYER_ZERO);
+        return getBalances (journal, acct, date, inclusive, LAYER_ZERO, 0L);
     }
 
     /**
@@ -728,12 +730,13 @@ would delete former transactions.
      * @param acct the account.
      * @param date date (inclusive).
      * @param inclusive either true or false
-     * @param layers the layers 
+     * @param layers the layers
+     * @param maxId maximum GLEntry ID to be considered in the query (if greater than zero)
      * @return array of 2 BigDecimals with balance and entry count.
      * @throws GLException if user doesn't have READ permission on this jounral.
      */
     public BigDecimal[] getBalances 
-        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers) 
+        (Journal journal, Account acct, Date date, boolean inclusive, short[] layers, long maxId) 
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
@@ -741,12 +744,12 @@ would delete former transactions.
         if (acct.getChildren() != null) {
             if (acct.isChart()) {
                 return getChartBalances 
-                    (journal, (CompositeAccount) acct, date, inclusive, layers);
+                    (journal, (CompositeAccount) acct, date, inclusive, layers, maxId);
             }
             Iterator iter = acct.getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
-                BigDecimal[] b = getBalances (journal, a, date, inclusive, layers);
+                BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
                 balance[0] = balance[0].add (b[0]);
                 session.evict (a);
             }
@@ -755,6 +758,8 @@ would delete former transactions.
             Criteria crit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
                 .add (Restrictions.in ("layer", toShortArray (layers)));
+            if (maxId > 0L)
+                crit.add (Restrictions.le ("id", maxId));
             crit = crit.createCriteria ("transaction")
                     .add (Restrictions.eq ("journal", journal));
             if (date != null) {
@@ -803,7 +808,7 @@ would delete former transactions.
             .add (Restrictions.ge ("postDate", start))
             .add (Restrictions.le ("postDate", end));
 
-        BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers);
+        BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers, 0L);
         List entries = crit.list();
         BigDecimal finalBalance = applyEntries (initialBalance[0], entries);
 
@@ -843,6 +848,23 @@ would delete former transactions.
         crit.setMaxResults (1); 
         return (Checkpoint) crit.uniqueResult();
     }
+    public BalanceCache getBalanceCache
+        (Journal journal, Account acct, short[] layers)
+        throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.CHECKPOINT, journal);
+        Criteria crit = session.createCriteria (Checkpoint.class)
+            .add (Restrictions.eq ("journal", journal))
+            .add (Restrictions.eq ("account", acct));
+
+        if (layers != null)
+           crit.add (Restrictions.eq ("layers", layersToString(layers)));
+
+        crit.addOrder (Order.desc ("ref"));
+        crit.setMaxResults (1);
+        return (BalanceCache) crit.uniqueResult();
+    }
+    
 
     /**
      * @param journal the Journal
@@ -877,6 +899,13 @@ would delete former transactions.
         createCheckpoint0 (journal, acct, date, threshold, layers);
         // tx.commit();
     }
+    public void createBalanceCache
+        (Journal journal, Account acct, short[] layers)
+        throws HibernateException, GLException
+    {
+        createBalanceCache0 (journal, acct, layers, getMaxGLEntryId());
+    }
+    
     /**
      * Lock a journal.
      * @param journal the journal.
@@ -1020,7 +1049,7 @@ would delete former transactions.
         else if (acct instanceof FinalAccount) {
             Date sod = Util.floor (date);   // sod = start of day
             invalidateCheckpoints (journal, new Account[] { acct }, sod, sod, layers);
-            BigDecimal b[] = getBalances (journal, acct, date, true, layers);
+            BigDecimal b[] = getBalances (journal, acct, date, true, layers, 0L);
             if (b[1].intValue() >= threshold) {
                 Checkpoint c = new Checkpoint ();
                 c.setDate (date);
@@ -1206,14 +1235,14 @@ would delete former transactions.
         return map.values();
     }
     private BigDecimal[] getChartBalances 
-        (Journal journal, CompositeAccount acct, Date date, boolean inclusive, short[] layers) 
+        (Journal journal, CompositeAccount acct, Date date, boolean inclusive, short[] layers, long maxId)
         throws HibernateException, GLException
     {
         BigDecimal balance[] = { ZERO, ZERO };
         Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
         while (iter.hasNext()) {
             Account a = (Account) iter.next();
-            BigDecimal[] b = getBalances (journal, a, date, inclusive, layers);
+            BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
             if (a.isDebit()) {
                 balance[0] = balance[0].add (b[0]);
                 balance[1] = balance[1].add (b[1]);
@@ -1317,5 +1346,36 @@ would delete former transactions.
         }
         return sb.toString();
     }
-}
+    private long getMaxGLEntryId () {
+        Criteria crit = session.createCriteria (GLEntry.class);
+        crit.addOrder (Order.desc ("id"));
+        crit.setMaxResults (1);
+        GLEntry entry = (GLEntry) crit.uniqueResult();
+        return entry != null ? entry.getId() : 0L;
+    }
 
+    private void createBalanceCache0
+        (Journal journal, Account acct, short[] layers, long maxId)
+        throws HibernateException, GLException
+    {
+        if (acct instanceof CompositeAccount) {
+            Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
+            while (iter.hasNext()) {
+                Account a = (Account) iter.next();
+                createBalanceCache0 (journal, a, layers, maxId);
+            }
+        }
+        else if (acct instanceof FinalAccount) {
+            // invalidateBalanceCaches (journal, new Account[] { acct }, sod, sod, layers);
+            BigDecimal balance =
+                getBalances (journal, acct, null, true, layers, maxId) [0];
+            BalanceCache c = new BalanceCache ();
+            c.setRef (maxId);
+            c.setBalance (balance);
+            c.setJournal (journal);
+            c.setAccount (acct);
+            c.setLayers (layersToString(layers));
+            session.save (c);
+        }
+    }
+}
