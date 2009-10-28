@@ -18,11 +18,7 @@
 
 package org.jpos.gl;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import java.math.BigDecimal;
-import java.util.Date;
 import org.hibernate.Transaction;
 
 public class BalanceTest extends TestBase {
@@ -47,38 +43,7 @@ public class BalanceTest extends TestBase {
         root        = assets.getRoot();
     }
     public void testCurrentBalances() throws Exception {
-        assertEquals (
-            new BigDecimal ("25000.00"), 
-            gls.getBalance (tj, cashUS)
-        );
-        assertEquals (
-            new BigDecimal("5000.00"),
-            gls.getBalance (tj, cashPesos)
-        );
-        assertEquals (
-            new BigDecimal("12500.00"),
-            gls.getBalance (tj, cashPesos, (short) 858)
-        );
-        assertEquals (
-            new BigDecimal("20000.00"),
-            gls.getBalance (tj, bobEquity)
-        );
-        assertEquals (
-            new BigDecimal("10000.00"),
-            gls.getBalance (tj, aliceEquity)
-        );
-        assertEquals (
-            new BigDecimal("50000.00"),
-            gls.getBalance (tj, assets)
-        );
-        assertEquals (
-            new BigDecimal("30000.00"),
-            gls.getBalance (tj, equity)
-        );
-        assertEquals (
-            new BigDecimal("0.00"),
-            gls.getBalance (tj, root)
-        );
+        checkCurrentBalances();
     }
     public void testBalancesByPostDate() throws Exception {
         checkBalancesByPostDate();
@@ -94,7 +59,11 @@ public class BalanceTest extends TestBase {
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
         gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
+        gls.createBalanceCache (tj, root, new short[] { 858 });        
         tx1.commit ();
+    }
+    public void testCachedBalances() throws Exception {
+        checkCurrentBalances();
     }
     public void testAccountDetailCashUS() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
@@ -176,6 +145,40 @@ public class BalanceTest extends TestBase {
         assertEquals (
             new BigDecimal("0.00"),
             gls.getBalance (tj, root, Util.parseDate ("20041231"))
+        );
+    }
+    private void checkCurrentBalances() throws Exception {
+        assertEquals (
+            new BigDecimal ("25000.00"),
+            gls.getBalance (tj, cashUS)
+        );
+        assertEquals (
+            new BigDecimal("5000.00"),
+            gls.getBalance (tj, cashPesos)
+        );
+        assertEquals (
+            new BigDecimal("12500.00"),
+            gls.getBalance (tj, cashPesos, (short) 858)
+        );
+        assertEquals (
+            new BigDecimal("20000.00"),
+            gls.getBalance (tj, bobEquity)
+        );
+        assertEquals (
+            new BigDecimal("10000.00"),
+            gls.getBalance (tj, aliceEquity)
+        );
+        assertEquals (
+            new BigDecimal("50000.00"),
+            gls.getBalance (tj, assets)
+        );
+        assertEquals (
+            new BigDecimal("30000.00"),
+            gls.getBalance (tj, equity)
+        );
+        assertEquals (
+            new BigDecimal("0.00"),
+            gls.getBalance (tj, root)
         );
     }
 }
