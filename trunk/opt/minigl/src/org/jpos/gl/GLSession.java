@@ -755,29 +755,36 @@ public class GLSession {
             }
         }
         else if (acct instanceof FinalAccount) {
-            Criteria crit = session.createCriteria (GLEntry.class)
+            Criteria entryCrit = session.createCriteria (GLEntry.class)
                 .add (Restrictions.eq ("account", acct))
                 .add (Restrictions.in ("layer", toShortArray (layers)));
             if (maxId > 0L)
-                crit.add (Restrictions.le ("id", maxId));
-            crit = crit.createCriteria ("transaction")
+                entryCrit.add (Restrictions.le ("id", maxId));
+
+            Criteria txnCrit = entryCrit.createCriteria ("transaction")
                     .add (Restrictions.eq ("journal", journal));
             if (date != null) {
                 if (inclusive) {
-                    crit.add (Restrictions.lt ("postDate", Util.tomorrow (date)));
+                    txnCrit.add (Restrictions.lt ("postDate", Util.tomorrow (date)));
                 }
                 else {
                     date = Util.floor (date);
-                    crit.add (Restrictions.lt ("postDate", date));
+                    txnCrit.add (Restrictions.lt ("postDate", date));
+                }
+                Checkpoint chkp = getRecentCheckpoint (journal, acct, date, inclusive, layers);
+                if (chkp != null) {
+                    balance[0] = chkp.getBalance();
+                    txnCrit.add (Restrictions.gt ("postDate", chkp.getDate()));
+                }
+
+            } else {
+                BalanceCache bcache = getBalanceCache (journal, acct, layers);
+                if (bcache != null) {
+                    balance[0] = bcache.getBalance();
+                    entryCrit.add (Restrictions.gt("id", bcache.getRef()));
                 }
             }
-            Checkpoint chkp = 
-                getRecentCheckpoint (journal, acct, date, inclusive, layers);
-            if (chkp != null) {
-                balance[0] = chkp.getBalance();
-                crit.add (Restrictions.gt ("postDate", chkp.getDate()));
-            }
-            List l = crit.list();
+            List l = txnCrit.list();
             balance[0] = applyEntries (balance[0], l);
             balance[1] = new BigDecimal (l.size()); // hint for checkpoint
         } 
@@ -853,7 +860,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.CHECKPOINT, journal);
-        Criteria crit = session.createCriteria (Checkpoint.class)
+        Criteria crit = session.createCriteria (BalanceCache.class)
             .add (Restrictions.eq ("journal", journal))
             .add (Restrictions.eq ("account", acct));
 
