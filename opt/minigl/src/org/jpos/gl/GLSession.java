@@ -440,7 +440,8 @@ public class GLSession {
         txn.setTimestamp (new Date());
         if (txn.getPostDate() == null)
             txn.setPostDate (txn.getTimestamp());
-        invalidateCheckpoints (txn);
+        else
+            invalidateCheckpoints (txn);
         Collection rules = getRules (txn);
         // dumpRules (rules);
         applyRules (txn, rules);
