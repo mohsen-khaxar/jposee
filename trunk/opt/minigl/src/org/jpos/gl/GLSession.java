@@ -911,9 +911,37 @@ public class GLSession {
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        createBalanceCache0 (journal, acct, layers, getMaxGLEntryId());
+        createBalanceCache (journal, acct, layers, getMaxGLEntryId());
     }
-    
+    public void createBalanceCache
+        (Journal journal, Account acct, short[] layers, long maxId)
+        throws HibernateException, GLException
+    {
+        if (acct instanceof CompositeAccount) {
+            Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
+            while (iter.hasNext()) {
+                Account a = (Account) iter.next();
+                createBalanceCache (journal, a, layers, maxId);
+            }
+        }
+        else if (acct instanceof FinalAccount) {
+            BigDecimal balance =
+                getBalances (journal, acct, null, true, layers, maxId) [0];
+            BalanceCache c = getBalanceCache (journal, acct, layers);
+            if (c == null) {
+                c = new BalanceCache ();
+                c.setJournal (journal);
+                c.setAccount (acct);
+                c.setLayers (layersToString(layers));
+            }
+            if (maxId != c.getRef()) {
+                c.setRef (maxId);
+                c.setBalance (balance);
+                session.saveOrUpdate (c);
+            }
+        }
+    }
+
     /**
      * Lock a journal.
      * @param journal the journal.
@@ -1362,28 +1390,15 @@ public class GLSession {
         return entry != null ? entry.getId() : 0L;
     }
 
-    private void createBalanceCache0
-        (Journal journal, Account acct, short[] layers, long maxId)
-        throws HibernateException, GLException
+    private BalanceCache geteBalanceCache
+        (Journal journal, Account account, short[] layers)
+        throws HibernateException
     {
-        if (acct instanceof CompositeAccount) {
-            Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
-            while (iter.hasNext()) {
-                Account a = (Account) iter.next();
-                createBalanceCache0 (journal, a, layers, maxId);
-            }
-        }
-        else if (acct instanceof FinalAccount) {
-            // invalidateBalanceCaches (journal, new Account[] { acct }, sod, sod, layers);
-            BigDecimal balance =
-                getBalances (journal, acct, null, true, layers, maxId) [0];
-            BalanceCache c = new BalanceCache ();
-            c.setRef (maxId);
-            c.setBalance (balance);
-            c.setJournal (journal);
-            c.setAccount (acct);
-            c.setLayers (layersToString(layers));
-            session.save (c);
-        }
+        Criteria crit = session.createCriteria (BalanceCache.class)
+            .add (Restrictions.eq ("journal", journal))
+            .add (Restrictions.eq ("account", account))
+            .add (Restrictions.eq ("layers", layersToString(layers)));
+
+        return (BalanceCache) crit.uniqueResult();
     }
 }
