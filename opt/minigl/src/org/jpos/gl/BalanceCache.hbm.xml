@@ -6,12 +6,11 @@
 <hibernate-mapping>
   <class name="org.jpos.gl.BalanceCache" table="balance_cache">
     <composite-id>
-     <key-property name="ref" type="long" />
-     <key-property name="layers" type="string" length="32" />
      <key-many-to-one name="journal" class="org.jpos.gl.Journal" />
      <key-many-to-one name="account" class="org.jpos.gl.Account" />
+     <key-property name="layers" type="string" length="32" />
     </composite-id>
-
+    <property name="ref" type="long" />
     <property name="balance" type="big_decimal">
      <column name="balance" sql-type="numeric(14,2)" not-null="true" />
     </property>

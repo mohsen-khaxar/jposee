@@ -58,10 +58,18 @@ public class BalanceTest extends TestBase {
     }
     public void testBalanceCache() throws Exception {
         final Transaction tx1 = gls.beginTransaction();
-        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
-        gls.createBalanceCache (tj, root, new short[] { 858 });        
+        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO, 10);
+        gls.createBalanceCache (tj, root, new short[] { 858 }, 10);
         tx1.commit ();
     }
+    public void testBalanceCache2() throws Exception {
+        // create a second set of cache, should erase first one
+        final Transaction tx1 = gls.beginTransaction();
+        gls.createBalanceCache (tj, root, GLSession.LAYER_ZERO);
+        gls.createBalanceCache (tj, root, new short[] { 858 });
+        tx1.commit ();
+    }
+
     public void testCachedBalances() throws Exception {
         checkCurrentBalances();
     }
