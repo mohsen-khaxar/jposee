@@ -73,6 +73,12 @@ public class BalanceTest extends TestBase {
     public void testCachedBalances() throws Exception {
         checkCurrentBalances();
     }
+    public void testDeleteCache() throws Exception {
+        final Transaction tx1 = gls.beginTransaction();
+        gls.deleteBalanceCache (tj, cashUS, GLSession.LAYER_ZERO);       
+        tx1.commit ();
+
+    }
     public void testAccountDetailCashUS() throws Exception {
         AccountDetail detail = gls.getAccountDetail (
             tj, cashUS, 

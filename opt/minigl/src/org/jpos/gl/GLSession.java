@@ -1042,6 +1042,26 @@ public class GLSession {
         // tx.commit();
     }
 
+     public void deleteBalanceCache
+        (Journal journal, Account account, short[] layers)
+        throws HibernateException
+    {
+        StringBuilder sb = new StringBuilder ("delete BalanceCache where journal = :journal");
+        if (account != null)
+            sb.append (" and account = :account");
+        if (layers != null)
+            sb.append (" and layers = :layers");
+
+        Query query = session.createQuery (sb.toString())
+                .setEntity ("journal", journal);
+        if (account != null)
+            query.setEntity ("account", account);
+        if (layers != null)
+            query.setString ("layers", layersToString (layers));
+
+        query.executeUpdate();
+    }
+
     // -----------------------------------------------------------------------
     // PUBLIC HELPERS 
     // -----------------------------------------------------------------------
