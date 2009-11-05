@@ -907,26 +907,27 @@ public class GLSession {
         createCheckpoint0 (journal, acct, date, threshold, layers);
         // tx.commit();
     }
-    public void createBalanceCache
+    public BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers)
         throws HibernateException, GLException
     {
-        createBalanceCache (journal, acct, layers, getMaxGLEntryId());
+        return createBalanceCache (journal, acct, layers, getMaxGLEntryId());
     }
-    public void createBalanceCache
+    public BigDecimal createBalanceCache
         (Journal journal, Account acct, short[] layers, long maxId)
         throws HibernateException, GLException
     {
+        BigDecimal balance = null;
         if (acct instanceof CompositeAccount) {
+            balance = ZERO;
             Iterator iter = ((CompositeAccount) acct).getChildren().iterator();
             while (iter.hasNext()) {
                 Account a = (Account) iter.next();
-                createBalanceCache (journal, a, layers, maxId);
+                balance = balance.add (createBalanceCache (journal, a, layers, maxId));
             }
         }
         else if (acct instanceof FinalAccount) {
-            BigDecimal balance =
-                getBalances (journal, acct, null, true, layers, maxId) [0];
+            balance = getBalances (journal, acct, null, true, layers, maxId) [0];
             BalanceCache c = getBalanceCache (journal, acct, layers);
             if (c == null) {
                 c = new BalanceCache ();
@@ -940,6 +941,7 @@ public class GLSession {
                 session.saveOrUpdate (c);
             }
         }
+        return balance;
     }
 
     /**
