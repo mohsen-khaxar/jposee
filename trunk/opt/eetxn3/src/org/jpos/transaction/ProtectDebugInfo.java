@@ -35,72 +35,114 @@ import org.jpos.iso.ISOException;
  * @author David Bergert
  */
 
-public class ProtectDebugInfo extends TxnSupport implements Constants, AbortParticipant {
-    
-    String protectedFields;
-    String wipedFields;
-    
-    public int prepare (long id, Serializable o) {
-        return PREPARED | READONLY;
-    }
-    public int prepareForAbort (long id, Serializable o) {
-        return PREPARED | READONLY;
-    }
-    public void commit (long id, Serializable o) { 
-        protect ((Context) o);
-    }
-    public void abort  (long id, Serializable o) { 
-        protect ((Context) o);
-    }
-    private void protect (Context ctx) {
+/**
+ *Sample Usage:
+ *
+ *    <participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug">
+ *    
+ *        <property name="protected-fields" value="REQUEST" />
+ *        <property name="protected-fields" value="RESPONSE" />
+ *        <property name="protected-fields" value="PAN" />
+ *
+ *        <property name="wiped-fields" value="EXPDATE" />
+ *   
+ *        <property name="protect-ISOMsg" value="2" />
+ *        <property name="protect-ISOMsg" value="35" />
+ *        <property name="protect-ISOMsg" value="45" />
+ *        <property name="protect-ISOMsg" value="52" />
+ *        <property name="protect-ISOMsg" value="55" />
+ *
+ *        <property name="protect-FSDMsg" value="account-number" />
+ *        <property name="protect-FSDMsg" value="track2-data" />
+ *   
+ *        </participant>
+ *
+ *        <participant class="org.jpos.transaction.Debug" logger="Q2" realm="debug" />
+ **/
+ 
+ public class ProtectDebugInfo extends TxnSupport implements Constants, AbortParticipant {
 
-        /* wipe by removing entries from the context  */
-        StringTokenizer stw = new StringTokenizer (wipedFields, ", ");            
-        while (stw.hasMoreTokens()) {
-            ctx.remove(stw.nextToken());
-        }        
-        /* Protect entry items */
-        StringTokenizer stp = new StringTokenizer (protectedFields, ", ");            
-        while (stp.hasMoreTokens()) {
-            String s = stp.nextToken();
-            Object o = ctx.get (s);
-            if (o instanceof ISOMsg){
-                ISOMsg m = (ISOMsg) ctx.get (s);
-                if (m != null) {
-                    m = (ISOMsg) m.clone();
-                    ctx.put (s, m);   // place a clone in the context
-                    protect (m);
-                }
-            }
-            if (o instanceof String){
-                String p = (String) ctx.get(s);
-                if (p != null){
-                    ctx.put(s, protect (p));    
-                }
-            }  
-        }
-    }
-    private void protect (ISOMsg m) {
-        try {
-            if (m != null) {
-                m.set (2, protect (m.getString (2)));
-                m.set (35, protect (m.getString (35)));
-                m.set (45, protect (m.getString (45)));
-                m.set (52, protect (m.getString (52)));
-                m.set (55, protect (m.getString (55)));
-            }
-        } catch (ISOException e) {
-            warn (e);
-        }
-    }
-    private String protect (String s) {
-        return s != null ? ISOUtil.protect (s) : s;
-    }
-    public void setConfiguration (Configuration cfg) 
-        throws ConfigurationException
-    {
-        super.setConfiguration (cfg);
-        this.protectedFields = cfg.get("protected-fields","");
-        this.wipedFields = cfg.get("wiped-fields","");
-    }
-}
+     String[] protectedFields;
+     String[] wipedFields;
+     String[] protectISO;
+     String[] protectFSD;
+
+     public int prepare (long id, Serializable o) {
+         return PREPARED | READONLY;
+     }
+     public int prepareForAbort (long id, Serializable o) {
+         return PREPARED | READONLY;
+     }
+     public void commit (long id, Serializable o) { 
+         protect ((Context) o);
+     }
+     public void abort  (long id, Serializable o) { 
+         protect ((Context) o);
+     }
+     private void protect (Context ctx) {
+
+         /* wipe by removing entries from the context  */
+         for (String s: wipedFields)
+             ctx.remove(s);
+         /* Protect entry items */           
+         for (String s: protectedFields)
+         {
+             Object o = ctx.get (s);
+             if (o instanceof ISOMsg){
+                 ISOMsg m = (ISOMsg) ctx.get (s);
+                 if (m != null) {
+                     m = (ISOMsg) m.clone();
+                     ctx.put (s, m);   // place a clone in the context
+                     for (String p: protectISO)
+                         protectField(m,Integer.parseInt(p));
+                 }
+             }
+             if (o instanceof FSDMsg){
+                 FSDMsg m = (FSDMsg) ctx.get (s);
+                 if (m != null) {
+                     for (String p: protectFSD)
+                         protectField(m,p);
+                 }
+             }
+             if (o instanceof String){
+                 String p = (String) ctx.get(s);
+                 if (p != null){
+                     ctx.put(s, protect (p));    
+                 }
+             }  
+         }
+     }
+     private void protectField (ISOMsg m, int f) {
+         try {
+             if (m != null) {
+                 m.set (f, protect (m.getString (f)));
+             }
+         } catch (ISOException e) {
+             warn (e);
+         }
+     }
+     private void protectField (FSDMsg m, String f) {
+         if (f != null) {
+             String s = m.get (f);
+             if (s != null) 
+                 m.set (f, ISOUtil.protect (s));
+         }
+     }
+     private void wipeField (FSDMsg m, String f) {
+         if (m != null && m.get(f) != null) {
+             m.set (f, "*");
+         }
+     }
+     private String protect (String s) {
+         return s != null ? ISOUtil.protect (s) : s;
+     }
+     public void setConfiguration (Configuration cfg) 
+         throws ConfigurationException
+     {
+         super.setConfiguration (cfg);
+         this.protectedFields = cfg.getAll("protected-fields");
+         this.wipedFields = cfg.getAll("wiped-fields");
+         this.protectISO = cfg.getAll("protect-ISOMsg");
+         this.protectFSD = cfg.getAll("protect-FSDMsg");
+     }
+ }
