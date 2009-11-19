@@ -41,11 +41,11 @@ import org.jpos.util.FSDMsg;
  *
  *    <participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug">
  *    
- *        <property name="protected-fields" value="REQUEST" />
- *        <property name="protected-fields" value="RESPONSE" />
- *        <property name="protected-fields" value="PAN" />
+ *        <property name="protected-field" value="REQUEST" />
+ *        <property name="protected-field" value="RESPONSE" />
+ *        <property name="protected-field" value="PAN" />
  *
- *        <property name="wiped-fields" value="EXPDATE" />
+ *        <property name="wiped-field" value="EXPDATE" />
  *   
  *        <property name="protect-ISOMsg" value="2" />
  *        <property name="protect-ISOMsg" value="35" />
@@ -141,8 +141,8 @@ import org.jpos.util.FSDMsg;
          throws ConfigurationException
      {
          super.setConfiguration (cfg);
-         this.protectedFields = cfg.getAll("protected-fields");
-         this.wipedFields = cfg.getAll("wiped-fields");
+         this.protectedFields = cfg.getAll("protected-field");
+         this.wipedFields = cfg.getAll("wiped-field");
          this.protectISO = cfg.getAll("protect-ISOMsg");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
      }
