@@ -41,11 +41,11 @@ import org.jpos.util.FSDMsg;
  *
  *    <participant class="org.jpos.transaction.ProtectDebugInfo" logger="Q2" realm="debug">
  *    
- *        <property name="protected-field" value="REQUEST" />
- *        <property name="protected-field" value="RESPONSE" />
- *        <property name="protected-field" value="PAN" />
+ *        <property name="protect-entry" value="REQUEST" />
+ *        <property name="protect-entry" value="RESPONSE" />
+ *        <property name="protect-entry" value="PAN" />
  *
- *        <property name="wiped-field" value="EXPDATE" />
+ *        <property name="wipe-entry" value="EXPDATE" />
  *   
  *        <property name="protect-ISOMsg" value="2" />
  *        <property name="protect-ISOMsg" value="35" />
@@ -63,8 +63,8 @@ import org.jpos.util.FSDMsg;
  
  public class ProtectDebugInfo extends TxnSupport implements Constants, AbortParticipant {
 
-     String[] protectedFields;
-     String[] wipedFields;
+     String[] protectedEntrys;
+     String[] wipedEntrys;
      String[] protectISO;
      String[] protectFSD;
 
@@ -83,10 +83,10 @@ import org.jpos.util.FSDMsg;
      private void protect (Context ctx) {
 
          /* wipe by removing entries from the context  */
-         for (String s: wipedFields)
+         for (String s: wipedEntrys)
              ctx.remove(s);
          /* Protect entry items */           
-         for (String s: protectedFields)
+         for (String s: protectedEntrys)
          {
              Object o = ctx.get (s);
              if (o instanceof ISOMsg){
@@ -141,8 +141,8 @@ import org.jpos.util.FSDMsg;
          throws ConfigurationException
      {
          super.setConfiguration (cfg);
-         this.protectedFields = cfg.getAll("protected-field");
-         this.wipedFields = cfg.getAll("wiped-field");
+         this.protectedEntrys = cfg.getAll("protect-entry");
+         this.wipedEntrys = cfg.getAll("wipe-entry");
          this.protectISO = cfg.getAll("protect-ISOMsg");
          this.protectFSD = cfg.getAll("protect-FSDMsg");
      }
