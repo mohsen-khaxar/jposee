@@ -29,6 +29,7 @@ import org.jpos.transaction.AbortParticipant;
 import org.jpos.iso.ISOMsg;
 import org.jpos.iso.ISOUtil;
 import org.jpos.iso.ISOException;
+import org.jpos.util.FSDMsg;
 
 /**
  * @author Alejandro Revilla
