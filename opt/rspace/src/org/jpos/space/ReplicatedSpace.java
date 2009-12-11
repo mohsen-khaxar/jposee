@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.util.Set;
 import java.util.Map;
 import java.util.UUID;
 import org.jpos.iso.ISOUtil;
@@ -43,7 +44,7 @@ import org.jgroups.conf.XmlConfigurator;
 
 public class ReplicatedSpace 
     extends Log
-    implements Space, Receiver 
+    implements LocalSpace, Receiver 
 {
     Channel channel;
     String nodeName;
@@ -440,6 +441,21 @@ public class ReplicatedSpace
         String type2String (int type) {
             return type < types.length ? types [type] : "invalid";
         }
+    }
+    public void addListener (Object key, SpaceListener listener) {
+        ((LocalSpace)sp).addListener (key, listener);
+    }
+    public void addListener (Object key, SpaceListener listener, long timeout) {
+        ((LocalSpace)sp).addListener (key, listener, timeout);
+    }
+    public void removeListener (Object key, SpaceListener listener) {
+        ((LocalSpace)sp).removeListener (key, listener);
+    }
+    public Set getKeySet () {
+        return ((LocalSpace)sp).getKeySet();
+    }
+    public int size (Object key) {
+        return ((LocalSpace)sp).size(key);
     }
 }
 
