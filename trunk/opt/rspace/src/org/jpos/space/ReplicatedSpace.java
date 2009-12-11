@@ -96,7 +96,7 @@ public class ReplicatedSpace
         try {
             Request r = new Request (Request.OUT, key, value, timeout);
             channel.send (new Message (null, null, r));
-            sp.rd (new MD5Template (key, value), MAX_WAIT);
+            // sp.rd (new MD5Template (key, value), MAX_WAIT);
         } catch (ChannelException e) {
             throw new SpaceError (e);
         }
