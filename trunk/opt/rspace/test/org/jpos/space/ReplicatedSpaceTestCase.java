@@ -16,18 +16,19 @@ public class ReplicatedSpaceTestCase extends TestCase {
         logger.addListener (new SimpleLogListener (System.out));
         rs1 = new ReplicatedSpace (
             SpaceFactory.getSpace ("tspace:sp1"),
-            "rspace", "../cfg/udp.xml", logger, "RS1", true, true
+            "rspace", "../cfg/udp.xml", logger, "RS1", true, false
         );
+        rs2 = new ReplicatedSpace (
+            SpaceFactory.getSpace ("tspace:sp2"),
+            "rspace", "../cfg/udp.xml", logger, "RS2", true, false
+        );
+        Thread.sleep (1000L);
     }
 
     public void testAll () throws Exception {
         outISOMsg ();
-        rs2 = new ReplicatedSpace (
-            SpaceFactory.getSpace ("tspace:sp2"),
-            "rspace", "../cfg/udp.xml", logger, "RS2", true, true
-        );
         inISOMsg();
-        for (int i=0; i<10; i++) {
+        for (int i=0; i<100; i++) {
             basicTest ();
             outInRs1();
             outInRs2();
@@ -49,7 +50,6 @@ public class ReplicatedSpaceTestCase extends TestCase {
         rs1.out ("ISOQUEUE", m);
     }
     public void inISOMsg() throws Exception {
-
         // verify that the message is in the local sp2
         Space sp = SpaceFactory.getSpace ("tspace:sp2");
         ISOMsg m = (ISOMsg) sp.rd ("ISOQUEUE", 5000L);
@@ -63,32 +63,33 @@ public class ReplicatedSpaceTestCase extends TestCase {
         assertNotNull ("ISOMsg is null", m);
     }
     public void basicTest () throws Exception {
-        rs2.out ("Test", "rs1-0", 10000L);
+        rs1.out ("Test", "rs1-0", 10000L);
         assertEquals ("rs1-0", rs1.rd ("Test"));
         assertEquals ("rs1-0", rs2.rd ("Test"));
+        assertEquals ("rs1-0", rs2.in ("Test"));
 
-        assertEquals ("rs1-0", rs1.in ("Test"));
         rs2.out ("Test", "rs2-0", 10000L);
         assertEquals ("rs2-0", rs1.rd ("Test"));
         assertEquals ("rs2-0", rs2.rd ("Test"));
-        assertEquals ("rs2-0", rs2.in ("Test"));
+        assertEquals ("rs2-0", rs1.in ("Test"));
     }
     public void outRdIn (String key, Space s1, Space s2) throws Exception {
         s1.out (key, "0", 10000L);
-        assertEquals ("0", s1.rd (key, 1000));
-        assertEquals ("0", s2.rd (key, 1000));
+        assertEquals ("0", s1.rd (key, 10000));
+        assertEquals ("0", s2.rd (key, 10000));
 
         s2.out (key, "1", 10000L);
-        assertEquals ("0", s1.rd (key, 1000));
-        assertEquals ("0", s2.rd (key, 1000));
+        assertEquals ("0", s1.rd (key, 10000));
+        assertEquals ("0", s2.rd (key, 10000));
 
         // in in s1
-        assertEquals ("0", s1.in (key, 1000));
-        assertEquals ("1", s1.rd (key, 1000));
-        assertEquals ("1", s2.rd (key, 1000));
+        assertEquals ("0", s1.in (key, 10000));
+
+        assertEquals ("1", s1.rd (key, 10000));
+        assertEquals ("1", s2.rd (key, 10000));
 
         // in in s2
-        assertEquals ("1", s2.in (key, 1000));
+        assertEquals ("1", s2.in (key, 10000));
     }
     public void outInRs1() throws Exception {
         rs1.out ("Test", "Test on RS1", 10000L);
@@ -118,11 +119,12 @@ public class ReplicatedSpaceTestCase extends TestCase {
         assertEquals ("Test PUSH RS1", rs1.rd ("Test-push", 1000));
         assertEquals ("Test PUSH RS1", rs2.rd ("Test-push", 1000));
         rs1.push ("Test-push", "Test PUSH RS1.1", 10000L);
+        Thread.sleep (100L);
         assertEquals ("Test PUSH RS1.1", rs1.rd ("Test-push", 1000));
         assertEquals ("Test PUSH RS1.1", rs2.rd ("Test-push", 1000));
         assertEquals ("Test PUSH RS1.1", rs1.in ("Test-push", 1000));
-
         rs2.push ("Test-push", "Test PUSH RS2", 10000L);
+        Thread.sleep (100L);
         assertEquals ("Test PUSH RS2", rs1.rd ("Test-push", 1000));
         assertEquals ("Test PUSH RS2", rs2.rd ("Test-push", 1000));
         assertEquals ("Test PUSH RS2", rs1.in ("Test-push", 1000));
@@ -137,8 +139,10 @@ public class ReplicatedSpaceTestCase extends TestCase {
         assertNull (rs2.rdp ("Test-push"));
     }
     public void tearDown() throws Exception {
-        rs1.close();
-        rs2.close();
+        if (rs1 != null)
+            rs1.close();
+        if (rs2 != null)
+            rs2.close();
     }
 }
 

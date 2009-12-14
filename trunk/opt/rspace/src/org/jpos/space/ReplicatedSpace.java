@@ -55,7 +55,8 @@ public class ReplicatedSpace
     boolean trace;
     boolean replicate;
     public static final long TIMEOUT    = 15000L;
-    public static final long MAX_WAIT   = 500L;
+    public static final long MAX_WAIT   = 5000L;
+    public static final long MAX_OUT_WAIT  = 5000L;
     public static final long ONE_MINUTE = 60000L;
     public static final long FIVE_MINUTES = 5*60000L;
 
@@ -72,7 +73,7 @@ public class ReplicatedSpace
         this.sp = sp;
         setLogger (logger, realm);
         initChannel(groupName, configFile);
-        this.nodeName = channel.getLocalAddress().toString();
+        this.nodeName = channel.getAddress().toString();
         this.nodePrefix = nodeName + ".";
         this.seqName  = nodeName + ".seq";
         this.trace = trace;
@@ -96,7 +97,7 @@ public class ReplicatedSpace
         try {
             Request r = new Request (Request.OUT, key, value, timeout);
             channel.send (new Message (null, null, r));
-            // sp.rd (new MD5Template (key, value), MAX_WAIT);
+            Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
         } catch (ChannelException e) {
             throw new SpaceError (e);
         }
@@ -108,8 +109,8 @@ public class ReplicatedSpace
         Address coordinator = getCoordinator();   
         try {
             Request r = new Request (Request.PUSH, key, value, timeout);
-            channel.send (new Message (coordinator, null, r));
-            sp.rd (new MD5Template (key, value), MAX_WAIT);
+            channel.send (new Message (null, null, r));
+            Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
         } catch (ChannelException e) {
             throw new SpaceError (e);
         }
@@ -149,8 +150,9 @@ public class ReplicatedSpace
                         sp.out (r.key, r.value, r.timeout + TIMEOUT);
                     else
                         sp.out (r.key, r.value);
-                    synchronized (this) {
-                        notifyAll();
+
+                    if (msg.getSrc().equals (channel.getAddress())) {
+                        sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
                     }
                     break;
                 case Request.PUSH:
@@ -158,8 +160,9 @@ public class ReplicatedSpace
                         sp.push (r.key, r.value, r.timeout + TIMEOUT);
                     else
                         sp.push (r.key, r.value);
-                    synchronized (this) {
-                        notifyAll();
+
+                    if (msg.getSrc().equals (channel.getAddress())) {
+                        sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
                     }
                     break;
                 case Request.RDP:
@@ -202,14 +205,14 @@ public class ReplicatedSpace
                     break;
                 case Request.INP_NOTIFICATION:
                     // if not self notification
-                    if (!channel.getLocalAddress().equals (msg.getSrc()))
+                    if (!channel.getAddress().equals (msg.getSrc()))
                         sp.inp (r.value);
                     break;
                 case Request.SPACE_COPY:
                     if (replicate && !isCoordinator() && sp instanceof TSpace) {
                         ((TSpace)sp).setEntries ((Map) r.value);
-                        synchronized (this) {
-                            notifyAll();
+                        synchronized (sp) {
+                            sp.notifyAll();
                         }
                     }
                     break;
@@ -242,42 +245,41 @@ public class ReplicatedSpace
         return false;
     }
     // ----------------------------------------------------------------
-   
-    public synchronized Object rd (Object key) {
+    public synchronized Object rd  (Object key) {
         Object obj;
         while ((obj = rdp (key)) == null) {
-            try {
-                wait (MAX_WAIT);
-            } catch (InterruptedException e) { }
+            sp.rd (key);
         }
         return obj;
     }
     public synchronized Object rd  (Object key, long timeout) {
         Object obj;
-        long now = System.currentTimeMillis();
-        long end = now + timeout;
-        while ((obj = rdp (key)) == null && 
-                ((now = System.currentTimeMillis()) < end))
-        {
-            try {
-                wait (Math.min (MAX_WAIT, (end - now)));
-            } catch (InterruptedException e) { }
+        long end = System.currentTimeMillis() + timeout;
+        while ((obj = rdp (key)) == null) {
+            long timeleft = end - System.currentTimeMillis();
+            if (timeleft > 0) 
+                sp.rd (key, timeleft);
+            else
+                break;
         }
         return obj;
     }
     public synchronized Object in (Object key) {
-        return in (key, Long.MAX_VALUE);
+        Object obj;
+        while ((obj = inp (key)) == null) {
+            sp.rd (key);
+        }
+        return obj;
     }
     public synchronized Object in (Object key, long timeout) {
         Object obj;
-        long now = System.currentTimeMillis();
-        long end = now + timeout;
-        while ((obj = inp (key)) == null && 
-                ((now = System.currentTimeMillis()) < end))
-        {
-            try {
-                wait (Math.min (MAX_WAIT, (end - now)));
-            } catch (InterruptedException e) { }
+        long end = System.currentTimeMillis() + timeout;
+        while ((obj = inp (key)) == null) {
+            long timeleft = end - System.currentTimeMillis();
+            if (timeleft > 0) 
+                sp.rd (key, timeleft);
+            else
+                break;
         }
         return obj;
     }
@@ -313,9 +315,10 @@ public class ReplicatedSpace
             evt.addMessage (view.toString());
             Logger.log (evt);
         }
-        if (replicate && isCoordinator() && sp instanceof TSpace) {
+        if (replicate && isCoordinator() && view.getMembers().size() > 1 && sp instanceof TSpace) {
             new Thread () {
                 public void run() {
+                    info ("New node joined, sending full Space");
                     send (null,
                         new Request (
                             Request.SPACE_COPY, 
@@ -328,7 +331,7 @@ public class ReplicatedSpace
         }
     }
     public boolean isCoordinator () {
-        return channel.getLocalAddress().equals (view.getMembers().get(0));
+        return channel.getAddress().equals (view.getMembers().get(0));
     }
     public void setState(byte[] new_state) {
         // 
@@ -381,13 +384,13 @@ public class ReplicatedSpace
         String props = conf.getProtocolStackString();
         channel = new JChannel (props);
         // channel.setOpt(Channel.GET_STATE_EVENTS, Boolean.TRUE);
-        channel.setOpt(Channel.AUTO_RECONNECT, Boolean.TRUE);
+        // channel.setOpt(Channel.AUTO_RECONNECT, Boolean.TRUE);
         channel.setReceiver(this);
         channel.connect (groupName);
-        info ("member: " + channel.getLocalAddress().toString());
+        info ("member: " + channel.getAddress().toString());
     }
     public static class Request implements Serializable {
-        static final long serialVersionUID = -7667532143057033544L;
+        static final long serialVersionUID = -5676486343295850374L;
         static final int OUT=1;
         static final int PUSH=2;
         static final int RDP=3;
@@ -406,19 +409,21 @@ public class ReplicatedSpace
         public Object key=null;
         public Object value=null;
         public long timeout=0;
+        private UUID uuid;
 
         public Request() {
             super();
+            uuid = UUID.randomUUID();
         }
         public Request(int type, Object key, Object value, long timeout) {
-            super ();
+            this ();
             this.type    = type;
             this.key     = key;
             this.value   = value;
             this.timeout = timeout;
         }
         public Request(int type, Object key, Object value) {
-            super ();
+            this ();
             this.type    = type;
             this.key     = key;
             this.value   = value;
@@ -437,6 +442,9 @@ public class ReplicatedSpace
             }
             sb.append (" timeout=" + timeout);
             return sb.toString();
+        }
+        public UUID getUUID () {
+            return uuid;
         }
         String type2String (int type) {
             return type < types.length ? types [type] : "invalid";
