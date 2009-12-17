@@ -24,4 +24,5 @@
 
         <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
         <property name="hibernate.cache.use_structured_entries">true</property>
+        <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
