@@ -55,7 +55,7 @@ public class ReplicatedSpace
     boolean trace;
     boolean replicate;
     public static final long TIMEOUT    = 15000L;
-    public static final long MAX_WAIT   = 5000L;
+    public static final long MAX_WAIT   = 60000L;
     public static final long MAX_OUT_WAIT  = 5000L;
     public static final long ONE_MINUTE = 60000L;
     public static final long FIVE_MINUTES = 5*60000L;
@@ -117,7 +117,7 @@ public class ReplicatedSpace
     }
     public Object rdp (Object key) {
         Request r = new Request (Request.RDP, key, 0);
-        r.value = Long.toString (r.hashCode());
+        r.value = r.getUUID();
         sendToCoordinator (r);
         Object obj = sp.in (r.value, MAX_WAIT);
         if (obj instanceof NullPointerException)
@@ -126,7 +126,7 @@ public class ReplicatedSpace
     }
     public Object inp (Object key) {
         Request r = new Request (Request.INP, key, 0);
-        r.value = UUID.randomUUID().toString();
+        r.value = r.getUUID();
         sendToCoordinator (r);
         Object obj = sp.in (r.value, MAX_WAIT);
         if (obj instanceof NullPointerException)
@@ -175,8 +175,10 @@ public class ReplicatedSpace
                     );
                     break;
                 case Request.RDP_RESPONSE:
-                    if (r.value == null)
+                    if (r.value == null) {
                         r.value = new NullPointerException();
+                        evt.addMessage (" negative response");
+                    }
                     sp.out (r.key, r.value, MAX_WAIT);
                     break;
                 case Request.INP:
@@ -185,7 +187,7 @@ public class ReplicatedSpace
                         send (null,
                             new Request (
                                 Request.INP_NOTIFICATION, 
-                                r.key, // value is ref key for response
+                                r.key, 
                                 new MD5Template (r.key, v)
                             )
                         );
@@ -233,22 +235,28 @@ public class ReplicatedSpace
     public boolean existAny (Object[] keys, long timeout) {
         long now = System.currentTimeMillis();
         long end = now + timeout;
-        synchronized (sp) {
-            while (((now = System.currentTimeMillis()) < end)) {
-                if (existAny (keys))
-                    return true;
-                try {
-                    sp.wait (end - now);
-                } catch (InterruptedException e) { }
-            }
+        while (((now = System.currentTimeMillis()) < end)) {
+            if (existAny (keys))
+                return true;
+            try {
+                synchronized (sp) {
+                    if (!sp.existAny (keys, timeout))
+                        sp.wait (end - now);
+                }
+            } catch (InterruptedException e) { }
         }
         return false;
     }
     // ----------------------------------------------------------------
-    public synchronized Object rd  (Object key) {
+    public Object rd  (Object key) {
         Object obj;
         while ((obj = rdp (key)) == null) {
-            sp.rd (key);
+            synchronized (sp) {
+                try {
+                    if (sp.rdp (key) == null) 
+                        sp.wait (MAX_WAIT);
+                } catch (InterruptedException e) { }
+            }
         }
         return obj;
     }
@@ -257,8 +265,14 @@ public class ReplicatedSpace
         long end = System.currentTimeMillis() + timeout;
         while ((obj = rdp (key)) == null) {
             long timeleft = end - System.currentTimeMillis();
-            if (timeleft > 0) 
-                sp.rd (key, timeleft);
+            if (timeleft > 0) {
+                synchronized (sp) {
+                    try {
+                        if (sp.rdp (key) == null) 
+                            sp.wait (Math.min (MAX_WAIT, timeleft));
+                    } catch (InterruptedException e) { }
+                }
+            }
             else
                 break;
         }
@@ -267,7 +281,12 @@ public class ReplicatedSpace
     public Object in (Object key) {
         Object obj;
         while ((obj = inp (key)) == null) {
-            sp.rd (key);
+            synchronized (sp) {
+                try {
+                    if (sp.rdp (key) == null) 
+                        sp.wait (MAX_WAIT);
+                } catch (InterruptedException e) { }
+            }
         }
         return obj;
     }
@@ -276,8 +295,14 @@ public class ReplicatedSpace
         long end = System.currentTimeMillis() + timeout;
         while ((obj = inp (key)) == null) {
             long timeleft = end - System.currentTimeMillis();
-            if (timeleft > 0) 
-                sp.rd (key, timeleft);
+            if (timeleft > 0) {
+                synchronized (sp) {
+                    try {
+                        if (sp.rdp (key) == null) 
+                            sp.wait (Math.min (MAX_WAIT, timeleft));
+                    } catch (InterruptedException e) { }
+                }
+            }
             else
                 break;
         }
