@@ -55,7 +55,7 @@ public class ReplicatedSpace
     boolean trace;
     boolean replicate;
     public static final long TIMEOUT    = 15000L;
-    public static final long MAX_WAIT   = 60000L;
+    public static final long MAX_WAIT   = 1000L;
     public static final long MAX_OUT_WAIT  = 5000L;
     public static final long ONE_MINUTE = 60000L;
     public static final long FIVE_MINUTES = 5*60000L;
