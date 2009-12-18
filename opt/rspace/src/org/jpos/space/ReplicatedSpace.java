@@ -252,7 +252,7 @@ public class ReplicatedSpace
         }
         return obj;
     }
-    public synchronized Object rd  (Object key, long timeout) {
+    public Object rd  (Object key, long timeout) {
         Object obj;
         long end = System.currentTimeMillis() + timeout;
         while ((obj = rdp (key)) == null) {
@@ -264,14 +264,14 @@ public class ReplicatedSpace
         }
         return obj;
     }
-    public synchronized Object in (Object key) {
+    public Object in (Object key) {
         Object obj;
         while ((obj = inp (key)) == null) {
             sp.rd (key);
         }
         return obj;
     }
-    public synchronized Object in (Object key, long timeout) {
+    public Object in (Object key, long timeout) {
         Object obj;
         long end = System.currentTimeMillis() + timeout;
         while ((obj = inp (key)) == null) {
