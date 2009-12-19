@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import org.jpos.iso.ISOUtil;
 import org.jpos.util.Log;
@@ -51,6 +52,7 @@ public class ReplicatedSpace
     String nodePrefix;
     String seqName;
     Space sp;
+    TSpace sl;    
     View view;
     boolean trace;
     boolean replicate;
@@ -98,6 +100,8 @@ public class ReplicatedSpace
             Request r = new Request (Request.OUT, key, value, timeout);
             channel.send (new Message (null, null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
+            if (o == null)
+                throw new SpaceError ("Could not out " + key);
         } catch (ChannelException e) {
             throw new SpaceError (e);
         }
@@ -111,6 +115,8 @@ public class ReplicatedSpace
             Request r = new Request (Request.PUSH, key, value, timeout);
             channel.send (new Message (null, null, r));
             Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
+            if (o == null)
+                throw new SpaceError ("Could not push " + key);
         } catch (ChannelException e) {
             throw new SpaceError (e);
         }
@@ -154,6 +160,8 @@ public class ReplicatedSpace
                     if (msg.getSrc().equals (channel.getAddress())) {
                         sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
                     }
+                    if (sl != null)
+                        notifyListeners(r.key, r.value);
                     break;
                 case Request.PUSH:
                     if (r.timeout != 0) 
@@ -164,6 +172,8 @@ public class ReplicatedSpace
                     if (msg.getSrc().equals (channel.getAddress())) {
                         sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
                     }
+                    if (sl != null)
+                        notifyListeners(r.key, r.value);
                     break;
                 case Request.RDP:
                     send (msg.getSrc(), 
@@ -177,7 +187,8 @@ public class ReplicatedSpace
                 case Request.RDP_RESPONSE:
                     if (r.value == null) {
                         r.value = new NullPointerException();
-                        evt.addMessage (" negative response");
+                        if (evt != null)
+                            evt.addMessage (" negative response");
                     }
                     sp.out (r.key, r.value, MAX_WAIT);
                     break;
@@ -475,20 +486,54 @@ public class ReplicatedSpace
             return type < types.length ? types [type] : "invalid";
         }
     }
-    public void addListener (Object key, SpaceListener listener) {
-        ((LocalSpace)sp).addListener (key, listener);
-    }
-    public void addListener (Object key, SpaceListener listener, long timeout) {
-        ((LocalSpace)sp).addListener (key, listener, timeout);
-    }
-    public void removeListener (Object key, SpaceListener listener) {
-        ((LocalSpace)sp).removeListener (key, listener);
-    }
     public Set getKeySet () {
         return ((LocalSpace)sp).getKeySet();
     }
     public int size (Object key) {
         return ((LocalSpace)sp).size(key);
+    }
+    public synchronized void addListener (Object key, SpaceListener listener) {
+        getSL().out (key, listener);
+    }
+    public synchronized void addListener
+        (Object key, SpaceListener listener, long timeout)
+    {
+        getSL().out (key, listener, timeout);
+    }
+    public synchronized void removeListener
+        (Object key, SpaceListener listener)
+    {
+        if (sl != null) {
+            sl.inp (new ObjectTemplate (key, listener));
+        }
+    }
+    public void notifyListeners (final Object key, final Object value) {
+        new Thread() {
+            public void run() {
+                Object[] listeners = null;
+                synchronized (this) {
+                    if (sl == null)
+                        return;
+                    List l = (List) sl.entries.get (key);
+                    if (l != null)
+                        listeners = l.toArray();
+                }
+                if (listeners != null) {
+                    for (int i=0; i<listeners.length; i++) {
+                        Object o = listeners[i];
+                        if (o instanceof SpaceListener)
+                            ((SpaceListener) o).notify (key, value);
+                    }
+                }
+            }
+        }.start();
+    }
+    private TSpace getSL() {
+        synchronized (this) {
+            if (sl == null)
+                sl = new TSpace();
+        }
+        return sl;
     }
 }
 
