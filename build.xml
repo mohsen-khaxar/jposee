@@ -6,9 +6,6 @@
     <!-- And then our defaults -->
     <property file="build.properties"/>
 
-    <!-- Name of project and version, used to create filenames -->
-    <property name="Name" value="jPOS-EE" />
-    <property name="name" value="jpos-ee" />
     <property name="archive" value="${name}-${version}" />
 
     <property name="bin.dir" value="bin"/>
