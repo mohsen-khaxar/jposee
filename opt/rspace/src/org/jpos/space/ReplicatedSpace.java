@@ -119,6 +119,21 @@ public class ReplicatedSpace
             throw new SpaceError (e);
         }
     }
+    public void put (Object key, Object value) { 
+        put (key, value, 0L);
+    }
+    public void put (Object key, Object value, long timeout) { 
+        getCoordinator();   
+        try {
+            Request r = new Request (Request.PUT, key, value, timeout);
+            channel.send (new Message (null, null, r));
+            Object o = sp.in (r.getUUID(), MAX_OUT_WAIT);
+            if (o == null)
+                throw new SpaceError ("Could not put " + key);
+        } catch (ChannelException e) {
+            throw new SpaceError (e);
+        }
+    }
     public Object rdp (Object key) {
         Request r = new Request (Request.RDP, key, 0);
         r.value = r.getUUID();
@@ -166,6 +181,18 @@ public class ReplicatedSpace
                         sp.push (r.key, r.value, r.timeout + TIMEOUT);
                     else
                         sp.push (r.key, r.value);
+
+                    if (msg.getSrc().equals (channel.getAddress())) {
+                        sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
+                    }
+                    if (sl != null)
+                        notifyListeners(r.key, r.value);
+                    break;
+                case Request.PUT:
+                    if (r.timeout != 0) 
+                        sp.put (r.key, r.value, r.timeout + TIMEOUT);
+                    else
+                        sp.put (r.key, r.value);
 
                     if (msg.getSrc().equals (channel.getAddress())) {
                         sp.out (r.getUUID(), Boolean.TRUE, MAX_OUT_WAIT);
@@ -433,10 +460,11 @@ public class ReplicatedSpace
         static final int INP_RESPONSE=6;
         static final int INP_NOTIFICATION=7;
         static final int SPACE_COPY=8;
+        static final int PUT=9;
         static final String[] types = { 
             "", "OUT", "PUSH", "RDP", "RDP_RESPONSE", 
             "INP", "INP_RESPONSE", "INP_NOTIFICATION", 
-            "SPACE_COPY"
+            "SPACE_COPY", "PUT"
         };
 
         public int type=0;
