@@ -32,7 +32,7 @@ public class CreateAccounts extends TestBase {
             acct.setCode ("23" + "." + Integer.toString (i));
             acct.setType (Account.CREDIT);
             acct.setDescription ("Group # " + i);
-            gls.addAccount (cards, acct);
+            gls.addAccount (cards, acct, true);
             gls.session().evict (acct);
         }
         end ("testCreateComposites");
@@ -56,7 +56,7 @@ public class CreateAccounts extends TestBase {
             acct.setCode ("23" + "." + n + "." + Integer.toString (i));
             acct.setType (Account.CREDIT);
             acct.setDescription ("Card # " + acct.getCode());
-            gls.addAccount (parent , acct);
+            gls.addAccount (parent , acct, true);
             gls.session().evict (acct);
         }
         checkPoint ("pre-commit " + n);
