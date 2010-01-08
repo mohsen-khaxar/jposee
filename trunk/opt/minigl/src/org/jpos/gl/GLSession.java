@@ -279,10 +279,11 @@ public class GLSession {
      *
      * @param parent parent account
      * @param acct account to add
+     * @param fast true if we want a fast add that do not eagerly load all childrens
      * @throws HibernateException on error
      * @throws GLException if user doesn't have permissions, or type mismatch
      */
-    public void addAccount (CompositeAccount parent, Account acct) 
+    public void addAccount (CompositeAccount parent, Account acct, boolean fast) 
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.WRITE);
@@ -306,7 +307,8 @@ public class GLSession {
         acct.setRoot (parent.getRoot());
         session.save (acct);
         acct.setParent (parent);
-        parent.getChildren().add (acct);
+        if (!fast)
+            parent.getChildren().add (acct);
     }
     /**
      * @param chart chart of accounts.
