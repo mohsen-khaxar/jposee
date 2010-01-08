@@ -279,6 +279,20 @@ public class GLSession {
      *
      * @param parent parent account
      * @param acct account to add
+     * @throws HibernateException on error
+     * @throws GLException if user doesn't have permissions, or type mismatch
+     */
+    public void addAccount (CompositeAccount parent, Account acct) 
+        throws HibernateException, GLException
+    {
+        addAccount (parent, acct, false);
+    }
+    /**
+     * Add account to parent.
+     * Check permissions, parent's type and optional currency.
+     *
+     * @param parent parent account
+     * @param acct account to add
      * @param fast true if we want a fast add that do not eagerly load all childrens
      * @throws HibernateException on error
      * @throws GLException if user doesn't have permissions, or type mismatch
