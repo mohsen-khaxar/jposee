@@ -20,13 +20,9 @@ package org.jpos.gl;
 
 import java.util.Date;
 import java.util.Set;
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.io.Serializable;
 import java.text.ParseException;
 import org.jdom.Element;
-import org.jdom.Comment;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -42,7 +38,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  */
 public abstract class Account implements Serializable, Comparable {
     private long id;
-    private int version;
     /**
      * 0 - type is undefined (used in top level [chart-of=]account)
      */
@@ -201,6 +196,7 @@ public abstract class Account implements Serializable, Comparable {
     /**
      * Creates a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
+     * @return Account converted to XML
      */
     public abstract Element toXML ();
 
@@ -215,13 +211,13 @@ public abstract class Account implements Serializable, Comparable {
      * Currency Code.
      * @param currencyCode a currency code.
      * @see Currency
+     * @throws IllegalArgumentException if currency code doesn't match the parent's one
      */
     public void setCurrencyCode (String currencyCode) 
         throws IllegalArgumentException 
     {
         if (currencyCode != null) {
             // go up until first level, don't process the chart itself
-            // (chart's getParent() == null)
             for (Account p = getParent(); 
                 p != null && p.getParent() != null; 
                 p = p.getParent()) 
@@ -281,6 +277,9 @@ public abstract class Account implements Serializable, Comparable {
     /**
      * Helper method used to create a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
+     *
+     * @param elem the Element to be populated
+     * @return populated element
      */
     protected Element toXML (Element elem) {
         elem.setAttribute ("code", getCode ());
@@ -300,6 +299,8 @@ public abstract class Account implements Serializable, Comparable {
     /**
      * Parses a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
+     * @param elem the element
+     * @throws ParseException on XML error
      */
     public void fromXML (Element elem) throws ParseException {
         setCode (elem.getAttributeValue ("code"));
