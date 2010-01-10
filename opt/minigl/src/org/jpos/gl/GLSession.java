@@ -35,8 +35,6 @@ import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.Transaction;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.ScrollableResults;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
@@ -53,13 +51,10 @@ import org.jpos.ee.DB;
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
 public class GLSession {
-    private static Configuration cfg;
-    private static SessionFactory sf;
-    private static Map ruleCache;
+    private static Map<String, Object> ruleCache;
     private GLUser user;
     private Session session;
     private static final Log log = LogFactory.getLog (GLSession.class);
-    private long checkpoint;
     private DB db;
     public static final short[] LAYER_ZERO = new short[] { 0 };
     public static final BigDecimal ZERO = new BigDecimal ("0.00");
@@ -68,7 +63,7 @@ public class GLSession {
     static {
         try {
             // init ();
-            ruleCache = new HashMap();
+            ruleCache = new HashMap<String, Object>();
         } catch (Exception e) {
             log.fatal (e);
         }
@@ -297,6 +292,7 @@ public class GLSession {
      * @throws HibernateException on error
      * @throws GLException if user doesn't have permissions, or type mismatch
      */
+    @SuppressWarnings("unchecked")
     public void addAccount (CompositeAccount parent, Account acct, boolean fast) 
         throws HibernateException, GLException
     {
@@ -1013,12 +1009,6 @@ public class GLSession {
         return db.session();
     }
     /**
-     * @return Hibernate's session factory
-     */
-    public SessionFactory getSessionFactory () {
-        return sf;
-    }
-    /**
      * Begin hibernate transaction.
      * @return new Transaction
      */
@@ -1150,9 +1140,9 @@ public class GLSession {
         if (acct == null)
             throw new GLException ("Invalid entry - account is null");
         Account p = acct;
-        List l = new ArrayList();
-        for (int i=0; p != null; i++) {
-            l.add (new Long (p.getId()));
+        List<Long> l = new ArrayList<Long>();
+        while (p != null) {
+            l.add (p.getId());
             p = p.getParent();
         }
         return l;
@@ -1210,16 +1200,6 @@ public class GLSession {
         }
         return balance;
     }
-    private static void init () throws Exception {
-        synchronized (GLSession.class) {
-            if (cfg != null)
-                return;
-
-            cfg = new Configuration();
-            cfg.configure ();
-            sf = cfg.buildSessionFactory();
-        }
-    }
     private Object getRuleImpl (String clazz) throws GLException
     {
         Object impl = ruleCache.get (clazz);
@@ -1239,15 +1219,8 @@ public class GLSession {
         }
         return impl;
     }
-    private void dumpRules (Collection rules) {
-        log.warn ("--- rules ---");
-        Iterator iter = rules.iterator();
-        while (iter.hasNext()) {
-            log.warn (iter.next());
-        }
-    }
-    private void addRules 
-        (Map ruleMap, Journal journal, List acctHierarchy, int offset)
+    private void addRules
+        (Map<String,Object> ruleMap, Journal journal, List acctHierarchy, int offset)
         throws HibernateException, GLException
     {
         Query q = session.createQuery (
@@ -1286,7 +1259,7 @@ public class GLSession {
     private Collection getRules (GLTransaction txn) 
         throws HibernateException, GLException
     {
-        Map map           = new LinkedHashMap ();
+        Map<String,Object> map = new LinkedHashMap<String,Object> ();
         Journal journal   = txn.getJournal();
 
         Query q = session.createQuery (
@@ -1389,18 +1362,6 @@ public class GLSession {
             session.delete (sr.get(0));
         }
     }
-    private void reset() {
-        checkpoint = System.currentTimeMillis();
-    }
-    private long checkPoint() {
-        long now  = System.currentTimeMillis();
-        long diff = now - checkpoint;
-        checkpoint = now;
-        return diff;
-    }
-    private void checkPoint (String s) {
-        System.out.println (s + " [" + checkPoint() + "ms]");
-    }
     private static Short[] toShortArray (short[] i) {
         if (i == null)
             return new Short[0];
@@ -1426,16 +1387,13 @@ public class GLSession {
         GLEntry entry = (GLEntry) crit.uniqueResult();
         return entry != null ? entry.getId() : 0L;
     }
-
-    private BalanceCache geteBalanceCache
-        (Journal journal, Account account, short[] layers)
-        throws HibernateException
-    {
-        Criteria crit = session.createCriteria (BalanceCache.class)
-            .add (Restrictions.eq ("journal", journal))
-            .add (Restrictions.eq ("account", account))
-            .add (Restrictions.eq ("layers", layersToString(layers)));
-
-        return (BalanceCache) crit.uniqueResult();
+    /*
+    private void dumpRules (Collection rules) {
+        log.warn ("--- rules ---");
+        Iterator iter = rules.iterator();
+        while (iter.hasNext()) {
+            log.warn (iter.next());
+        }
     }
+    */
 }
