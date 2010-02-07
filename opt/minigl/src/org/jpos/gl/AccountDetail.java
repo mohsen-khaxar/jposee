@@ -35,7 +35,7 @@ public class AccountDetail {
     Date start;
     BigDecimal initialBalance;
     BigDecimal finalBalance;
-    List entries;
+    List<GLEntry> entries;
     short[] layers;
 
     /**
@@ -51,7 +51,7 @@ public class AccountDetail {
     public AccountDetail(
         Journal journal, Account account,
         BigDecimal initialBalance, BigDecimal finalBalance,
-        Date start, Date end, List entries, short[] layers)
+        Date start, Date end, List<GLEntry> entries, short[] layers)
     {
         super();
         this.journal               = journal;
@@ -62,6 +62,7 @@ public class AccountDetail {
         this.end                   = end;
         this.entries               = entries;
         this.layers                = layers;
+        computeBalances();
     }
     public Journal getJournal() {
         return journal;
@@ -87,11 +88,15 @@ public class AccountDetail {
     public short[] getLayers() {
         return layers;
     }
-    /**
-     * @return number of entries.
-     */
     public int size() {
         return entries.size();
+    }
+    private void computeBalances() {
+        BigDecimal balance = GLSession.ZERO;
+        for (GLEntry entry : entries) {
+            balance = balance.add (entry.getImpact());
+            entry.setBalance (balance);
+        }
     }
 }
 

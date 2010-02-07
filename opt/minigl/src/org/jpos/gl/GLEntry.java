@@ -48,6 +48,7 @@ public class GLEntry {
     private BigDecimal amount;
     private FinalAccount account;
     private GLTransaction transaction;
+    private BigDecimal balance; // non persistent, view helper
 
     public GLEntry () {
         super();
@@ -216,6 +217,14 @@ public class GLEntry {
     public short getLayer() {
         return layer;
     }
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public void setBalance(BigDecimal balance) {
+        this.balance = balance;
+    }
+
     /**
      * Parses a JDOM Element as defined in
      * <a href="http://jpos.org/minigl.dtd">minigl.dtd</a>
