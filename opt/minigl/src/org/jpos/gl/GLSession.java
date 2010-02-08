@@ -329,7 +329,7 @@ public class GLSession {
      * @throws GLException if users doesn't have global READ permission.
      * @see GLPermission
      */
-    public FinalAccount getFinalAccount (Account chart, String code) 
+    public FinalAccount getFinalAccount (Account chart, String code)
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ);
@@ -341,6 +341,24 @@ public class GLSession {
         Iterator iter = q.list().iterator();
         return (FinalAccount) (iter.hasNext() ? iter.next() : null);
     }
+    /**
+     * @param chart chart of accounts.
+     * @return list of final accounts
+     * @throws HibernateException on database errors.
+     * @throws GLException if users doesn't have global READ permission.
+     * @see GLPermission
+     */
+    public List<FinalAccount> getFinalAccounts (Account chart)
+        throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery (
+            "from acct in class org.jpos.gl.FinalAccount where root=:chart"
+        );
+        q.setLong ("chart", chart.getId());
+        return (List<FinalAccount>) q.list();
+    }
+    
     /**
      * @param chart chart of accounts.
      * @param code  account's code.
