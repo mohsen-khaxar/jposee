@@ -847,11 +847,11 @@ public class GLSession {
 
         BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers, 0L);
         List entries = crit.list();
-        BigDecimal finalBalance = applyEntries (initialBalance[0], entries);
+        // BigDecimal finalBalance = applyEntries (initialBalance[0], entries);
 
         return new AccountDetail (
                 journal, acct, 
-                initialBalance[0], finalBalance,
+                initialBalance[0],
                 start, end, entries, layers );
     }
     /**

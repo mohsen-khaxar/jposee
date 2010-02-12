@@ -35,6 +35,8 @@ public class AccountDetail {
     Date start;
     BigDecimal initialBalance;
     BigDecimal finalBalance;
+    BigDecimal debits;
+    BigDecimal credits;
     List<GLEntry> entries;
     short[] layers;
 
@@ -43,21 +45,20 @@ public class AccountDetail {
      * @param journal the Journal.
      * @param account the account.
      * @param initialBalance initial balance (reporting currency).
-     * @param finalBalance final balance (reporting currency).
      * @param start start date (inclusive).
      * @param end end date (inclusive).
      * @param entries list of GLEntries.
+     * @param layers the layers involved in this detail
      */
     public AccountDetail(
         Journal journal, Account account,
-        BigDecimal initialBalance, BigDecimal finalBalance,
+        BigDecimal initialBalance,
         Date start, Date end, List<GLEntry> entries, short[] layers)
     {
         super();
         this.journal               = journal;
         this.account               = account;
         this.initialBalance        = initialBalance;
-        this.finalBalance          = finalBalance;
         this.start                 = start;
         this.end                   = end;
         this.entries               = entries;
@@ -76,6 +77,12 @@ public class AccountDetail {
     public BigDecimal getFinalBalance() {
         return finalBalance;
     }
+    public BigDecimal getDebits () {
+        return debits;
+    }
+    public BigDecimal getCredits () {
+        return credits;
+    }
     public Date getStart() {
         return start;
     }
@@ -92,11 +99,17 @@ public class AccountDetail {
         return entries.size();
     }
     private void computeBalances() {
-        BigDecimal balance = GLSession.ZERO;
+        BigDecimal balance = initialBalance;
+        debits = credits = GLSession.ZERO;        
         for (GLEntry entry : entries) {
             balance = balance.add (entry.getImpact());
             entry.setBalance (balance);
+            if (entry.isCredit())
+                credits = credits.add (entry.getAmount());
+            else
+                debits = debits.add (entry.getAmount());
         }
+        finalBalance = balance;
     }
 }
 
