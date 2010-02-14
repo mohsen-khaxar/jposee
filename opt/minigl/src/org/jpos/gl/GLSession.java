@@ -18,16 +18,7 @@
 
 package org.jpos.gl;
 
-import java.util.Map;
-import java.util.Date;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.math.BigDecimal;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -40,6 +31,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Disjunction;
 import org.hibernate.type.LongType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,6 +101,8 @@ public class GLSession {
      *
      * @param db EE DB
      * @param username the user name.
+     * @throws HibernateException on database related issue
+     * @throws GLException if user is invalid
      */
     public GLSession (DB db, String username) 
         throws HibernateException, GLException
@@ -358,7 +353,25 @@ public class GLSession {
         q.setLong ("chart", chart.getId());
         return (List<FinalAccount>) q.list();
     }
-    
+    /**
+     * @param chart chart of accounts.
+     * @return list of all accounts
+     * @throws HibernateException on database errors.
+     * @throws GLException if users doesn't have global READ permission.
+     * @see GLPermission
+     */
+    public List<Account> getAllAccounts (Account chart)
+        throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery (
+            "from acct in class org.jpos.gl.Account where root=:chart"
+        );
+        q.setLong ("chart", chart.getId());
+        return (List<Account>) q.list();
+    }
+
+
     /**
      * @param chart chart of accounts.
      * @param code  account's code.
@@ -837,9 +850,22 @@ public class GLSession {
         checkPermission (GLPermission.READ);
         start = Util.floor (start);
         end   = Util.ceil (end);
-        Criteria crit = session.createCriteria (GLEntry.class)
-            .add (Restrictions.eq ("account", acct))
-            .add (Restrictions.in ("layer", toShortArray (layers)));
+
+        Criteria crit = session.createCriteria (GLEntry.class);
+
+        if (acct instanceof CompositeAccount) {
+            Criteria subCrit = crit.createCriteria(("account"));
+            Disjunction dis = Restrictions.disjunction();
+            for (Long l : getChildren (acct)) {
+                dis.add (Restrictions.idEq(l));
+            }
+            subCrit.add (dis);
+        }
+        else {
+            crit.add (Restrictions.eq ("account", acct));
+        }
+
+        crit.add (Restrictions.in ("layer", toShortArray (layers)));
         crit = crit.createCriteria ("transaction")
             .add (Restrictions.eq ("journal", journal))
             .add (Restrictions.ge ("postDate", start))
@@ -1405,6 +1431,19 @@ public class GLSession {
         GLEntry entry = (GLEntry) crit.uniqueResult();
         return entry != null ? entry.getId() : 0L;
     }
+    private void recurseChildren (Account acct, List<Long> list) {
+        for (Account a : acct.getChildren()) {
+            if (a instanceof FinalAccount)
+                list.add (a.getId());
+            else recurseChildren (a, list);
+        }
+    }
+    private List<Long> getChildren (Account acct) {
+        List<Long> list = new ArrayList<Long>();
+        recurseChildren (acct, list);
+        return list;        
+    }
+
     /*
     private void dumpRules (Collection rules) {
         log.warn ("--- rules ---");
