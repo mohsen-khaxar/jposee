@@ -182,7 +182,7 @@ public abstract class Account implements Serializable, Comparable {
      * an IllegalArgumentException.
      * @param children a list of childrens
      */
-    public abstract void setChildren (Set children);
+    public abstract void setChildren (Set<Account> children);
 
     /**
      * Account's children.
@@ -191,7 +191,7 @@ public abstract class Account implements Serializable, Comparable {
      * an IllegalArgumentException.
      * @return children or null.
      */
-    public abstract Set getChildren ();
+    public abstract Set<Account> getChildren ();
 
     /**
      * Creates a JDOM Element as defined in
