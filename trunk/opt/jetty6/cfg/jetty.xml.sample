@@ -90,7 +90,7 @@
             <New class="org.mortbay.jetty.security.SslSocketConnector">
                 <Set name="Port">8443</Set>
                 <Set name="maxIdleTime">30000</Set>
-                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/cfg/keystore.ks</Set>
+                <Set name="keystore"><SystemProperty name="jetty.home" default="." />/lib/keystore.ks</Set>
                 <Set name="password">jposjposjposjpos</Set>
                 <Set name="keyPassword">jposjposjposjpos</Set>
 		<Set name="ExcludeCipherSuites">
