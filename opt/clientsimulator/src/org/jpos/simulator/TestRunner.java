@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2010 Alejandro P. Revilla
+ * Copyright (C) 2000-2008 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.util.Map;
 import java.util.Date;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,8 +62,7 @@ public class TestRunner
         packager = new XMLPackager();
     }
     protected void startService() {
-        for (int i=0; i<cfg.getInt ("sessions", 1); i++)
-            new Thread(this).start();
+        new Thread(this).start();
     }
     public void run () {
         try {
@@ -80,6 +78,8 @@ public class TestRunner
         } catch (Throwable t) {
             getLog().error (t);
         }
+        if (cfg.getBoolean ("shutdown"))
+            shutdownQ2();
     }
     private void runSuite (List suite, MUX mux, Interpreter bsh) 
         throws ISOException, EvalError
@@ -88,7 +88,7 @@ public class TestRunner
         Iterator iter = suite.iterator();
         long start = System.currentTimeMillis();
         long serverTime = 0;
-        while (iter.hasNext()) {
+        for (int i=1; iter.hasNext(); i++) {
             TestCase tc = (TestCase) iter.next();
             ISOMsg m = (ISOMsg) tc.getRequest().clone();
             if (tc.getPreEvaluationScript() != null) {
@@ -101,7 +101,7 @@ public class TestRunner
 	    tc.setResponse (mux.request (m, tc.getTimeout()));
             tc.end ();
             assertResponse (tc, bsh);
-            evt.addMessage (tc.toString());
+            evt.addMessage (i + ": " + tc.toString());
             serverTime += tc.elapsed();
             if (!tc.ok()) {
                 getLog().error (tc);
@@ -119,9 +119,13 @@ public class TestRunner
             + "ms(" + percentage (serverTime, total) + "%)"
             + ", simulator=" + simulatorTime 
             + "ms(" + percentage (simulatorTime, total) + "%)"
-            + ", total=" + total + "ms"
+            + ", total=" + total + "ms, shutdown="
+            + cfg.getBoolean("shutdown")
         );
         ISOUtil.sleep (100);     // let the channel do its logging first
+        if (cfg.getBoolean ("shutdown"))
+            evt.addMessage ("Shutting down");
+
         Logger.log (evt);
     }
     private List initSuite (Element suite) 
@@ -175,7 +179,7 @@ public class TestRunner
 	}
     }
     private boolean processResponse 
-        (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh)
+        (ISOMsg m, ISOMsg expected, Interpreter bsh)
         throws ISOException, EvalError
     {
         int maxField = m.getMaxField();
@@ -192,7 +196,8 @@ public class TestRunner
                         if (ret instanceof Boolean)
                             if (!((Boolean)ret).booleanValue())
                                 return false;
-                        expected.set (i, String.valueOf(ret)); 
+                        m.unset (i);
+                        expected.unset (i);
                     }
                     else if (value.startsWith("*M")) {
                         if (m.hasField (i)) {
@@ -202,22 +207,10 @@ public class TestRunner
                             return false;
                         }
                     }
-                    else if (value.startsWith("*E")) {
-                        if (m.hasField (i) && er.hasField (i)) {
-                            expected.set (i, er.getString (i));
-                        } else {
-                            return false;
-                        }
-                    }
-                    else if (value.startsWith("*O")) {
-                        if (m.hasField (i) && er.hasField (i)) {
-                            expected.set (i, er.getString (i));
-                        }
-                    }
                 } else if (c instanceof ISOMsg) {
                     ISOMsg rc = (ISOMsg) m.getComponent (i);
                     if (rc instanceof ISOMsg) {
-                        processResponse (er, rc, (ISOMsg) c, bsh);
+                        processResponse ((ISOMsg) rc, (ISOMsg) c, bsh);
                     }
                 }
             } else {
@@ -233,11 +226,10 @@ public class TestRunner
             tc.setResultCode (TestCase.TIMEOUT);
             return false;
         }
-        ISOMsg e = (ISOMsg) tc.getExpandedRequest().clone();
         ISOMsg c = (ISOMsg) tc.getResponse().clone();
         ISOMsg expected = (ISOMsg) tc.getExpectedResponse().clone();
         c.setHeader ((ISOHeader) null);
-        if (!processResponse (e, c, expected, bsh)) {
+        if (!processResponse (c, expected, bsh)) {
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }
@@ -256,7 +248,7 @@ public class TestRunner
                 }
             }
         }
-        if (!Arrays.equals (c.pack(), expected.pack())) {
+        if (!(new String(c.pack())).equals(new String(expected.pack()))) {
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }
@@ -291,19 +283,17 @@ public class TestRunner
                     applyRequestProps ((ISOMsg) c, bsh);
                 } else if (c instanceof ISOField) {
                     String value = (String) c.getValue();
-                    try {
-                        switch (value.charAt(0)) {
-                            case '!':
+                    if (value.length() > 0) {
+                        try {
+                            if (value.charAt (0) == '!') {
                                 m.set (i, bsh.eval (value.substring(1)).toString());
-                                break;
-                            case '@':
-                                m.set (i, 
-                                    ISOUtil.hex2byte(bsh.eval (value.substring(1)).toString())
-                                );
-                                break;
+                            } 
+                            else if (value.charAt (0) == '#') {
+                                m.set (i, ISOUtil.hex2byte(bsh.eval (value.substring(1)).toString()));
+                            }
+                        } catch (NullPointerException e) {
+                            m.unset (i);
                         }
-                    } catch (NullPointerException e) {
-                        m.unset (i);
                     }
                 }
             }
