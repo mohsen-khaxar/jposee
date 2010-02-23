@@ -4,6 +4,7 @@
   <property name="mux"     value="clientsimulator-mux" />
   <property name="timeout" value="30000" />
   <property name="sessions" value="1" />
+  <property name="shutdown" value="true" />
 
   <init>
     import java.util.Date;
