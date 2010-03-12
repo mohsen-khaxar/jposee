@@ -104,7 +104,7 @@ public class OperatorLogListener
         if (ev.length > 1) 
             subject = subject + ev.length + " events";
         else
-            subject = subject + ev[0].getRealm() + " - " +ev[0].tag;
+            subject = subject + ev[0].getRealm() + " - " +ev[0].getTag();
 
         // create some properties and get the default Session
         Properties props = System.getProperties();
@@ -137,7 +137,7 @@ public class OperatorLogListener
                 // create and fill the first message part
                 MimeBodyPart mbp = new MimeBodyPart();
                 mbp.setText(buf.toString());
-                mbp.setFileName (ev[i].tag + "_" + i + ".txt");
+                mbp.setFileName (ev[i].getTag() + "_" + i + ".txt");
                 mp.addBodyPart(mbp);
             }
             msg.setContent(mp);
@@ -154,7 +154,7 @@ public class OperatorLogListener
     private boolean checkOperatorTag(LogEvent ev) {
         String tags = cfg.get ("jpos.operator.tags");
 
-        return (tags.indexOf (ev.tag) >= 0) || (logExceptions && hasException (ev));
+        return (tags.indexOf (ev.getTag()) >= 0) || (logExceptions && hasException (ev));
     }
     private boolean hasException (LogEvent evt) {
         Iterator iter = evt.getPayLoad().iterator();
