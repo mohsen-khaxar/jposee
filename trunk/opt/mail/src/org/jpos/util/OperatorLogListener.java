@@ -18,17 +18,30 @@
 
 package org.jpos.util;
 
-import java.io.*;
-import java.util.*;
-import javax.mail.*;
-import javax.mail.internet.*;
-import org.jpos.iso.ISOUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import org.jpos.core.Configurable;
 import org.jpos.core.Configuration;
 import org.jpos.core.ConfigurationException;
+import org.jpos.iso.ISOUtil;
 
 /**
- * send e-mail with selected LogEvents to operator account
+ * Send e-mail with selected LogEvents to operator account.
  * <b>Configuration properties</b>
  * <pre>
  *    jpos.operator.from=jpos
@@ -37,10 +50,16 @@ import org.jpos.core.ConfigurationException;
  *    jpos.operator.tags="Operator ISORequest SystemMonitor"
  *    jpos.operator.delay=10000
  *    jpos.mail.smtp.host=localhost
+ *    jpos.mail.smtp.auth=true //If true, then smtp server need authentication.
+ *    jpos.mail.smtp.user=no-reply@some.com
+ *    jpos.mail.smtp.password=somepassword
+ *    jpos.mail.smtp.debug=false //Debugs smtp connection
+ *    jpos.mail.smtp.attachments=false //If true, sends each event as an attachment, otherwise put them into body 
  * </pre>
  *
  * @author apr@cs.com.uy
  * @version $Id: OperatorLogListener.java 2130 2005-04-11 15:58:24Z apr $
+ * 
  */
 public class OperatorLogListener 
     implements LogListener, Configurable, Runnable
@@ -74,6 +93,7 @@ public class OperatorLogListener
 
         new Thread(this).start();
     }
+    
     public void run() {
         Thread.currentThread().setName ("OperatorLogListener");
         int delay = cfg.getInt ("jpos.operator.delay");
@@ -96,11 +116,17 @@ public class OperatorLogListener
         } catch (BlockingQueue.Closed e) { }
     }
     private void sendMail (LogEvent[] ev) {
-        String from    = cfg.get ("jpos.operator.from", "jpos-logger");
-        String[] to    = cfg.getAll ("jpos.operator.to");
-        String[] cc    = cfg.getAll ("jpos.operator.cc");
-        String[] bcc   = cfg.getAll ("jpos.operator.bcc");
-        String subject = cfg.get ("jpos.operator.subject.prefix");
+        String from         = cfg.get    ("jpos.operator.from", "jpos-logger");
+        String[] to         = cfg.getAll ("jpos.operator.to");
+        String[] cc         = cfg.getAll ("jpos.operator.cc");
+        String[] bcc        = cfg.getAll ("jpos.operator.bcc");
+        String subject      = cfg.get    ("jpos.operator.subject.prefix");
+        String user         = cfg.get    ("jpos.mail.smtp.user", "");
+        String passw        = cfg.get    ("jpos.mail.smtp.password","");
+        boolean debug       = cfg.getBoolean("jpos.mail.smtp.debug",false);
+        boolean attachments = cfg.getBoolean("jpos.mail.smtp.attachments",true);
+        boolean auth        = cfg.getBoolean("jpos.mail.smtp.auth", true);
+
         if (ev.length > 1) 
             subject = subject + ev.length + " events";
         else
@@ -108,11 +134,13 @@ public class OperatorLogListener
 
         // create some properties and get the default Session
         Properties props = System.getProperties();
-        props.put("mail.smtp.host", cfg.get ("jpos.mail.smtp.host", 
-                "localhost"));
+        props.put("mail.smtp.host", cfg.get ("jpos.mail.smtp.host", "localhost"));
+        props.setProperty("mail.smtp.port",cfg.get ("jpos.mail.smtp.port","25"));
+        props.setProperty("mail.smtp.user", from);
+        props.setProperty("mail.smtp.auth", Boolean.toString(auth));
         
         Session session = Session.getDefaultInstance(props, null);
-        session.setDebug(false);
+        session.setDebug(debug);
         
         try {
             // create a message
@@ -137,12 +165,20 @@ public class OperatorLogListener
                 // create and fill the first message part
                 MimeBodyPart mbp = new MimeBodyPart();
                 mbp.setText(buf.toString());
-                mbp.setFileName (ev[i].getTag() + "_" + i + ".txt");
+                if (attachments)
+                    mbp.setFileName (ev[i].getTag() + "_" + i + ".txt");
                 mp.addBodyPart(mbp);
             }
             msg.setContent(mp);
             msg.setSentDate(new Date());
-            Transport.send(msg);
+            if (auth) {
+                Transport t = session.getTransport("smtp");
+                t.connect(user, passw);
+                t.sendMessage(msg, msg.getAllRecipients());
+                t.close();
+            } else {
+                Transport.send(msg);
+            }
         } catch (MessagingException mex) {
             mex.printStackTrace();
             Exception ex = null;
