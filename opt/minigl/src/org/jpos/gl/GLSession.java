@@ -794,7 +794,7 @@ public class GLSession {
                 Account a = (Account) iter.next();
                 BigDecimal[] b = getBalances (journal, a, date, inclusive, layers, maxId);
                 balance[0] = balance[0].add (b[0]);
-                session.evict (a);
+                // session.evict (a); FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
             }
         }
         else if (acct instanceof FinalAccount) {
