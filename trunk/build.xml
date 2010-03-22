@@ -125,6 +125,12 @@
 
     <target name="modules" depends="prepare">
       <filter filtersfile="${target}.properties" />
+      <antcall target="support" />
+      <subant target="prepare">
+        <fileset dir="${modules.dir}" excludesfile="${modules.ignore.list}">
+          <include name="**/build.xml"/>
+        </fileset>
+      </subant>
       <copy todir="${build.modules}" flatten="false" filtering="false">
         <fileset dir="${modules.dir}" includesfile="${modules.include.list}" />
       </copy>
@@ -170,23 +176,17 @@
          <include name="*.sh" />
         </fileset>
       </chmod>
+      <subant>
+        <fileset dir="${modules.dir}" excludesfile="${modules.ignore.list}">
+          <include name="**/build.xml"/>
+        </fileset>
+      </subant>
       <copy todir="${build.webapps}" flatten="false">
         <mapper type="regexp" from="^\w*[/|\\]\w*[/|\\](.*)" to="\1" />
         <fileset dir="${build.modules}" excludesfile="${modules.ignore.list}">
           <include name="**/webapps/**"/>
         </fileset>
       </copy>
-      <antcall target="support" />
-      <subant target="prepare">
-        <fileset dir="${modules.dir}" excludesfile="${modules.ignore.list}">
-          <include name="**/build.xml"/>
-        </fileset>
-      </subant>
-      <subant>
-        <fileset dir="${modules.dir}" excludesfile="${modules.ignore.list}">
-          <include name="**/build.xml"/>
-        </fileset>
-      </subant>
     </target>
 
     <target name="setup">
