@@ -1,0 +1,2 @@
+        <!-- module syslog -->
+        <mapping resource="org/jpos/ee/SysLogEvent.hbm.xml" />
