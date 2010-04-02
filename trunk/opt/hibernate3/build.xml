@@ -4,8 +4,10 @@
  <property name="module.lib.dir" value="${modules.dir}/${module.name}/lib"/>
  <property name="module.cfg.dir" value="${modules.dir}/${module.name}/cfg"/>
 
- <target name="prepare">
-   <condition property="dependenciesOk">
+ <target name="prepare" />
+ <target name="config">
+  <echo message="hibernate3: generating ${build.cfg}/hibernate.cfg.xml" />
+  <condition property="dependenciesOk">
      <or>
       <available file="build/modules/hibernate3_mysql/cfg/_hibernate.cfg.properties" />
       <available file="build/modules/hibernate3_oracle/cfg/_hibernate.cfg.properties" />
@@ -13,9 +15,6 @@
     </or>
   </condition>
   <fail unless="dependenciesOk">Missing a suitable Hibernate setup for a specific database.  You have to include one hibernate_xxx module, such as hibernate_mysql. </fail>
- </target>
- <target name="config">
-  <echo message="hibernate3: generating ${build.cfg}/hibernate.cfg.xml" />
   <copy 
    file="${module.cfg.dir}/_hibernate.cfg.head" 
    tofile="${build.cfg}/hibernate.cfg.tmp" overwrite="true" />
