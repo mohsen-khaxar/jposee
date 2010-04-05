@@ -362,6 +362,24 @@ public class GLTransaction {
         }
         return false;
     }
+    public BigDecimal getDebits (short[] layers) {
+        BigDecimal debits = GLSession.ZERO;
+        for (GLEntry e : (List<GLEntry>) getEntries()) {
+            if (e.isDebit() && e.hasLayers (layers)) {
+                debits = debits.add (e.getAmount());
+            }
+        }
+        return debits;
+    }
+    public BigDecimal getCredits (short[] layers) {
+        BigDecimal credits = GLSession.ZERO;
+        for (GLEntry e : (List<GLEntry>) getEntries()) {
+            if (e.isCredit() && e.hasLayers (layers)) {
+                credits = credits.add (e.getAmount());
+            }
+        }
+        return credits;
+    }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
     }
