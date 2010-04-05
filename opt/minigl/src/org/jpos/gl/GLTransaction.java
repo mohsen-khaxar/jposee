@@ -355,9 +355,15 @@ public class GLTransaction {
             .append(getId())
             .toHashCode();
     }
+    public boolean hasLayers (short[] layers) {
+        for (GLEntry e : (List<GLEntry>) getEntries()) {
+            if (e.hasLayers (layers))
+                return true;
+        }
+        return false;
+    }
     private BigDecimal negate (BigDecimal bd) {
         return bd != null ? bd.negate() : null;
     }
-
 }
 

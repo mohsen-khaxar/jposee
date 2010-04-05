@@ -272,6 +272,14 @@ public class GLEntry {
             .append(getId())
             .toHashCode();
     }
+    public boolean hasLayers (short[] layers) {
+        for (short l : layers) {
+            if (l == getLayer())
+                return true;
+        }
+        return false;
+    }
+
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
