@@ -371,7 +371,6 @@ public class GLSession {
         return (List<Account>) q.list();
     }
 
-
     /**
      * @param chart chart of accounts.
      * @param code  account's code.
@@ -853,15 +852,19 @@ public class GLSession {
 
         Criteria crit = session.createCriteria (GLEntry.class);
 
+        boolean hasChildren = false;
         if (acct instanceof CompositeAccount) {
-            Criteria subCrit = crit.createCriteria(("account"));
             Disjunction dis = Restrictions.disjunction();
             for (Long l : getChildren (acct)) {
+                hasChildren = true;
                 dis.add (Restrictions.idEq(l));
             }
-            subCrit.add (dis);
+            if (hasChildren) {
+                Criteria subCrit = crit.createCriteria(("account"));
+                subCrit.add (dis);
+            } 
         }
-        else {
+        if (!hasChildren) {
             crit.add (Restrictions.eq ("account", acct));
         }
 
