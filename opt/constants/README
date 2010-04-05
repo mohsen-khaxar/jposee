@@ -1,0 +1,6 @@
+This module includes an ant file that joins any *.k file into a unique
+org.jpos.ee.Constants interface to keep all the constants together and 
+access them only implementing this interface. 
+
+Same goes for *.p which becomes org/jpos/ee/Constants.properties file.
+
