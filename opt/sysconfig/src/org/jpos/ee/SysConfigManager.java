@@ -20,13 +20,12 @@ package org.jpos.ee;
 
 import java.util.List;
 import java.util.Iterator;
-import org.jpos.core.Configuration;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 
-public class SysConfigManager { // implements Configuration {
+public class SysConfigManager {
     DB db;
     String prefix = "";
 
@@ -50,7 +49,7 @@ public class SysConfigManager { // implements Configuration {
                 name = prefix + name;
             SysConfig cfg = (SysConfig) 
                 db.session().load (SysConfig.class, name);
-            return cfg.getValue() != null ? true : false;   
+            return cfg.getValue() != null;
         } catch (ObjectNotFoundException e) {
             // okay to happen
         } catch (HibernateException e) {
@@ -72,7 +71,7 @@ public class SysConfigManager { // implements Configuration {
         return defaultValue;
     }
     public String[] getAll  (String name) {
-        String[] values = null;
+        String[] values;
         try {
             if (prefix != null)
                 name = prefix + name;
@@ -92,11 +91,26 @@ public class SysConfigManager { // implements Configuration {
         }
         return values;
     }
+    @SuppressWarnings("unchecked")
+    public Iterator<SysConfig> iterator() {
+        Query query;
+        if (prefix != null) {
+            query = db.session().createQuery (
+                "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
+            );
+            query.setParameter ("name", prefix + "%");
+        } else {
+            query = db.session().createQuery (
+                "from sysconfig in class org.jpos.ee.SysConfig order by id"
+            );
+        }
+        return (Iterator<SysConfig>) query.list().iterator();        
+    }
     public void put (String name, String value) {
         put (name, value, null, null);
     }
     public void put (String name, String value, String readPerm, String writePerm) {
-        SysConfig cfg = null;
+        SysConfig cfg;
         if (prefix != null)
             name = prefix + name;
         try {
