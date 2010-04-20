@@ -875,6 +875,7 @@ public class GLSession {
             .add (Restrictions.le ("postDate", end));
 
         BigDecimal initialBalance[] = getBalances (journal, acct, start, false, layers, 0L);
+        crit.addOrder (Order.asc ("postDate"));
         List entries = crit.list();
         // BigDecimal finalBalance = applyEntries (initialBalance[0], entries);
 
