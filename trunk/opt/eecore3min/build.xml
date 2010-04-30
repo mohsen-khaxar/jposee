@@ -1,6 +1,6 @@
 <project name="jPOS-EE-SDK-eecore3" basedir="../..">
  <property file="build.properties"/>
- <property name="module.name" value="eecore3" />
+ <property name="module.name" value="eecore3min" />
  <property name="dist.dir"    value="dist"/>
  <property name="build.dir"   value="build"/>
  <property name="modules.dir" value="modules"/>
@@ -24,6 +24,9 @@
   <filter filtersfile="${target}.properties" />
   <concat destfile="${build.src}/org/jpos/ee/Constants.tmp" append="false" force="true">
    <header filtering="no" trimleading="yes"><![CDATA[package org.jpos.ee;
+
+       /* automatically generated - DO NOT EDIT */
+
        public interface Constants {]]>
    </header>
    <filterchain>
@@ -39,6 +42,11 @@
   </concat>
   <copy file="${build.src}/org/jpos/ee/Constants.tmp"
       tofile="${build.src}/org/jpos/ee/Constants.java"
+      filtering="true" />
+  <!-- Copy it to the module src directory too, in order to keep 
+       the IDE happy -->
+  <copy file="${build.src}/org/jpos/ee/Constants.tmp"
+      tofile="${module.src.dir}/org/jpos/ee/Constants.java"
       filtering="true" />
   <delete file="${build.src}/org/jpos/ee/Constants.tmp" />
 
