@@ -19,6 +19,7 @@
 package org.jpos.ee;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
 import org.hibernate.Query;
@@ -29,9 +30,14 @@ import org.hibernate.Transaction;
 import org.hibernate.SessionFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.CollectionKey;
+import org.hibernate.engine.EntityKey;
+import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.type.Type;
 import org.jpos.util.Log;
+import org.jpos.util.LogEvent;
+import org.jpos.util.Logger;
 import org.jpos.core.Sequencer;
 
 /**
@@ -154,6 +160,35 @@ public class DB {
     }
     public synchronized void setLog (Log log) {
         this.log = log;
+    }
+    public void printStats() {
+        if (getLog()!=null) {
+            LogEvent info = getLog().createInfo();
+
+            if (session != null) {
+                info.addMessage("====  STATISTICS ====");
+                SessionStatistics statistics = session().getStatistics();
+                info.addMessage("====   ENTITIES  ====");
+                Set<EntityKey> entityKeys = statistics.getEntityKeys();
+                for (EntityKey ek : entityKeys) {
+                    info.addMessage(
+                        String.format("[%s] %s",
+                            ek.getIdentifier(), ek.getEntityName())
+                        );
+                }
+                info.addMessage("==== COLLECTIONS ====");
+                Set<CollectionKey> collectionKeys = statistics.getCollectionKeys();
+                for (CollectionKey ck : collectionKeys) {
+                    info.addMessage(
+                        String.format("[%s] %s", ck.getKey(), ck.getRole())
+                    );
+                }
+                info.addMessage("=====================");
+            } else
+                info.addMessage ("Session is not open");
+            Logger.log(info);
+
+        }
     }
 }
 
