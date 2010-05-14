@@ -18,19 +18,22 @@
 
 package org.jpos.ee;
 
+import java.io.Serializable;
 import java.util.Date;
-import org.jpos.util.Log;
-import org.jpos.util.Logger;
-import org.jpos.util.LogEvent;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-/**
- * Helper class used to log entries in the SysLog.
- */
-public class SysLog {
-    DB db;
-    boolean autoCommit;
+@SuppressWarnings("unused")
+public class SysLog implements Serializable {
+    private Long id;
+    private Date date;
+    private boolean deleted;
+    private String source;
+    private String type;
+    private int severity;
+    private String summary;
+    private String detail;
+    private String trace;
+
     public static final int DEBUG    = 0;
     public static final int TRACE    = 1;
     public static final int INFO     = 2;
@@ -38,134 +41,94 @@ public class SysLog {
     public static final int ERROR    = 4;
     public static final int CRITICAL = 5;
 
-    /**
-     * create a SysLog object with auto commit on.
-     * (open/begin/commit/close is not required).
-     */
-    public SysLog () {
-        super ();
-        db = new DB();
-        autoCommit = true;
-    }
-    /**
-     * create a SysLog object with auto commit off.
-     * User is responsible for openning the underlying session
-     * and committing the transaction.
-     */
-    public SysLog (DB db) {
+    public static final String[] severityAsString = 
+        new String[] { "debug", "trace", "info", "warn", "error", "critical" };
+
+    public SysLog() {
         super();
-        this.db = db;
-        autoCommit = false;
-    }
-    /**
-     * @param autoCommit set autocommit mode
-     */
-    public void setAutocommit (boolean autoCommit) {
-        this.autoCommit = autoCommit;
-    }
-    /**
-     * @return auto commit mode
-     */
-    public boolean isAutoCommit() {
-        return autoCommit;
     }
 
-    /**
-     * Create a SysLogEvent and add it to the DB.
-     * If auto commit is on, then the operation is performed
-     * within a transaction, otherwise, it's up to the user
-     * to commit or flush the session.
-     * @param source this log event source
-     * @param type application specific event type (i.e. INFO, WARN, ERROR, ...)
-     * @param severity either DEBUG, TRACE, INFO, WARN, ERROR or CRITICAL
-     * @param summary summary information
-     * @param detail optional detail information
-     * @param trace optional trace information
-     * @return the newly created SysLogEvent
-     */
-    public SysLogEvent log (String source, String type, int severity,
-        String summary, String detail, String trace)
-    {
-        SysLogEvent evt = new SysLogEvent ();
-        try {
-            evt.setDate (new Date());
-            evt.setSource (source);
-            evt.setType (type);
-            evt.setSeverity (severity);
-            evt.setSummary (summary);
-            evt.setDetail (detail);
-            evt.setTrace (trace);
+    public Long getId() {
+        return id;
+    }
 
-            boolean autoClose = false;
-            if (autoCommit && db.session() == null) {
-                db.open ();
-                autoClose = true;
-            }
-            if (autoCommit) {
-                Transaction tx = db.beginTransaction ();
-                db.session().save (evt);
-                tx.commit ();
-            } else {
-                db.session().save (evt);
-            }
-            if (autoClose)
-                db.close ();
-        } catch (Throwable t) {
-            errorLog (evt, t);
-        }
-        return evt;
+    public void setId(Long id) {
+        this.id = id;
     }
-    /**
-     * Create a SysLogEvent and add it to the DB.
-     * If auto commit is on, then the operation is performed
-     * within a transaction, otherwise, it's up to the user
-     * to commit or flush the session.
-     * @param source this log event source
-     * @param type application specific event type (i.e. INFO, WARN, ERROR, ...)
-     * @param severity either DEBUG, TRACE, INFO, WARN, ERROR or CRITICAL
-     * @param summary summary information
-     * @param detail optional detail information
-     * @return the newly created SysLogEvent
-     */
-    public SysLogEvent log (String source, String type, int severity,
-        String summary, String detail)
-    {
-        return log (source, type, severity, summary, detail, null);
+
+    public Date getDate() {
+        return date;
     }
-    /**
-     * Create a SysLogEvent and add it to the DB.
-     * If auto commit is on, then the operation is performed
-     * within a transaction, otherwise, it's up to the user
-     * to commit or flush the session.
-     * @param source this log event source
-     * @param type application specific event type (i.e. INFO, WARN, ERROR, ...)
-     * @param severity either DEBUG, TRACE, INFO, WARN, ERROR or CRITICAL
-     * @param summary summary information
-     * @return the newly created SysLogEvent
-     */
-    public SysLogEvent log 
-        (String source, String type, int severity, String summary) 
-    {
-        return log (source, type, severity, summary, null, null);
+
+    public void setDate(Date date) {
+        this.date = date;
     }
-    private void errorLog (SysLogEvent evt, Throwable t) {
-        LogEvent ev = db.getLog().createError ();
-        ev.addMessage (new LoggeableSysLogEvent (evt));
-        ev.addMessage (t);
-        Logger.log (ev);
+
+    public boolean isDeleted() {
+        return deleted;
     }
-    /**
-     * @param event id
-     * @return log event
-     */
-    public SysLogEvent get (long id) {
-        try {
-            return (SysLogEvent) 
-                db.session().load (SysLogEvent.class, new Long (id));
-        } catch (Throwable e) {
-            db.getLog().error (e);
-        } 
-        return null;
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public int getSeverity() {
+        return severity;
+    }
+
+    public String getSeverityAsString () {
+        if (getSeverity() > SysLog.CRITICAL)
+            return Integer.toString (getSeverity());
+        else
+            return severityAsString [getSeverity()];
+    }
+    public void setSeverity(int severity) {
+        this.severity = severity;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public String getTrace() {
+        return trace;
+    }
+
+    public void setTrace(String trace) {
+        this.trace = trace;
+    }
+
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append("id", getId())
+            .toString();
     }
 }
-

@@ -3,13 +3,12 @@
   SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-  <class name="org.jpos.ee.SysLogEvent" table="syslog">
-    <meta attribute="extends">org.jpos.ee.SysLogEventBase</meta>
+  <class name="org.jpos.ee.SysLog" table="syslog">
     <id name="id" column="id" type="long">
       <generator class="native" />
     </id>
     <property name="date"        type="timestamp" />
-    <property name="deleted"     type="boolean" />
+    <property name="deleted"     type="yes_no" />
     <property name="source"      type="string" length="32" />
     <property name="type"        type="string" length="32" />
     <property name="severity"    type="int" />
@@ -18,4 +17,3 @@
     <property name="trace"       type="text" />
   </class>
 </hibernate-mapping>
-

@@ -1,2 +1,4 @@
-        <!-- module syslog -->
-        <mapping resource="org/jpos/ee/SysLogEvent.hbm.xml" />
+
+        <!-- cfg/syslog/cfg/__hibernate.cfg.mappings -->
+        <mapping resource="org/jpos/ee/SysLog.hbm.xml" />
+

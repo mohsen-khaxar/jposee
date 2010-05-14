@@ -1,6 +1,6 @@
 /*
  * jPOS Project [http://jpos.org]
- * Copyright (C) 2000-2010 Alejandro P. Revilla
+ * Copyright (C) 2000-2008 Alejandro P. Revilla
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,14 +20,14 @@ package org.jpos.ee;
 import org.jpos.util.Loggeable;
 import java.io.PrintStream;
 
-public class LoggeableSysLogEvent implements Loggeable {
-    SysLogEvent evt;
-    public LoggeableSysLogEvent (SysLogEvent evt) {
+public class LoggeableSysLog implements Loggeable {
+    SysLog evt;
+    public LoggeableSysLog (SysLog evt) {
         this.evt = evt;
     }
     public void dump (PrintStream p, String indent) {
         String newIndent = indent + "   ";
-        p.println (indent + "<syslog-event>");
+        p.println (indent + "<syslog>");
         if (evt.isDeleted())
             p.println (newIndent + "<deleted />" );
         p.println (newIndent + "<date>"     + evt.getDate()     + "</date>");
@@ -42,7 +42,7 @@ public class LoggeableSysLogEvent implements Loggeable {
             p.println (newIndent + "<detail>" + evt.getDetail() + "</detail>");
         if (evt.getTrace() != null)
             p.println (newIndent + "<trace>"  + evt.getTrace() + "</trace>");
-        p.println (indent + "</syslog-event>");
+        p.println (indent + "</syslog>");
     }
 }
 
