@@ -247,7 +247,7 @@ public class GLEntry {
             elem.addContent (detail);
         }
         if (getTags () != null) {
-            Element tags = new Element ("tags").setText (getDetail());
+            Element tags = new Element ("tags").setText (getTags());
             elem.addContent (tags);
         }
         elem.setAttribute ("account", getAccount().getCode());
