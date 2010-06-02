@@ -179,7 +179,7 @@ public class TestRunner
 	}
     }
     private boolean processResponse 
-        (ISOMsg m, ISOMsg expected, Interpreter bsh)
+        (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh)
         throws ISOException, EvalError
     {
         int maxField = m.getMaxField();
@@ -207,10 +207,18 @@ public class TestRunner
                             return false;
                         }
                     }
+                    else if (value.startsWith("*E")) {
+                        if (m.hasField (i) && er.hasField (i)) {
+                            expected.set (i, er.getString (i));
+                        } else {
+                            return false;
+                        }
+                    }
                 } else if (c instanceof ISOMsg) {
                     ISOMsg rc = (ISOMsg) m.getComponent (i);
+                    ISOMsg innerExpectedResponse = (ISOMsg) er.getComponent (i);
                     if (rc instanceof ISOMsg) {
-                        processResponse ((ISOMsg) rc, (ISOMsg) c, bsh);
+                        processResponse (innerExpectedResponse, (ISOMsg) rc, (ISOMsg) c, bsh);
                     }
                 }
             } else {
@@ -228,8 +236,9 @@ public class TestRunner
         }
         ISOMsg c = (ISOMsg) tc.getResponse().clone();
         ISOMsg expected = (ISOMsg) tc.getExpectedResponse().clone();
+        ISOMsg er = (ISOMsg) tc.getExpandedRequest().clone();
         c.setHeader ((ISOHeader) null);
-        if (!processResponse (c, expected, bsh)) {
+        if (!processResponse (er, c, expected, bsh)) {
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }
