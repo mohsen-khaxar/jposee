@@ -131,6 +131,11 @@ public class DB {
     public void save (Object obj) throws HibernateException {
         session.save (obj);
     }
+
+    public void delete (Object obj) {
+        session.delete (obj);
+    }
+
     /**
      * @return newly created Transaction
      * @throws HibernateException
