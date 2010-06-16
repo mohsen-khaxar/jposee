@@ -182,14 +182,14 @@ public class TestRunner
         (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh)
         throws ISOException, EvalError
     {
-        int maxField = m.getMaxField();
+        int maxField = Math.max(m.getMaxField(), expected.getMaxField());
+
         for (int i=0; i<=maxField; i++) {
             if (expected.hasField (i)) {
                 ISOComponent c = expected.getComponent (i);
                 if (c instanceof ISOField) {
                     String value = expected.getString (i);
-                    if (value.charAt (0) == '!' && 
-                        m.hasField(i) && value.length() > 1) 
+                    if (value.charAt (0) == '!' && value.length() > 1) 
                     {
                         bsh.set  ("value", m.getString (i));
                         Object ret = bsh.eval (value.substring (1));
