@@ -90,6 +90,12 @@ public class TestRunner
         long serverTime = 0;
         for (int i=1; iter.hasNext(); i++) {
             TestCase tc = (TestCase) iter.next();
+
+            getLog().trace (
+                "---------------------------[ " 
+              + tc.getName() 
+              + " ]---------------------------" );
+
             ISOMsg m = (ISOMsg) tc.getRequest().clone();
             if (tc.getPreEvaluationScript() != null) {
                 bsh.set ("testcase", tc);
