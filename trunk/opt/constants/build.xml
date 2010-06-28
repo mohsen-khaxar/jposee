@@ -40,6 +40,11 @@
   <copy file="${build.src}/org/jpos/ee/Constants.tmp"
       tofile="${build.src}/org/jpos/ee/Constants.java"
       filtering="true" />
+  <!-- Copy it to the module src directory too, in order to keep 
+       the IDE happy -->
+  <copy file="${build.src}/org/jpos/ee/Constants.tmp"
+      tofile="${module.src.dir}/org/jpos/ee/Constants.java"
+      filtering="true" />
   <delete file="${build.src}/org/jpos/ee/Constants.tmp" />
 
   <!-- Do the same with .p files, in order to create Constants.properties -->
