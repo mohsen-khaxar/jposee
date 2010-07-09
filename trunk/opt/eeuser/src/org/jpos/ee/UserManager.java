@@ -97,7 +97,7 @@ public class UserManager {
     }
     /**
      * @param u the user
-     * @param clearpass
+     * @param clearpass password in clear
      * @return true if password matches
      * @throws BLException if invalid user/pass
      * @throws HibernateException on low level hibernate related exception
