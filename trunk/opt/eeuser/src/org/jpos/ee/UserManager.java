@@ -105,10 +105,10 @@ public class UserManager {
                 .list();
     }
 
-       public static String getHash (String userName, String pass) {
+    public static String getHash (String userName, String pass) {
         String hash = null;
         try {
-            MessageDigest md = MessageDigest.getInstance ("MD5");
+            MessageDigest md = MessageDigest.getInstance ("SHA");
             md.update (userName.getBytes());
             hash = ISOUtil.hexString (
                 md.digest (pass.getBytes())
@@ -121,22 +121,13 @@ public class UserManager {
     public static String getHash (String s) {
         String hash = null;
         try {
-            MessageDigest md = MessageDigest.getInstance ("MD5");
+            MessageDigest md = MessageDigest.getInstance ("SHA");
             hash = ISOUtil.hexString (md.digest (s.getBytes())).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             // should never happen
         }
         return hash;
     }
-    /*
-    public static String getRandomHash () {
-        return getHash (
-            Double.toString (Math.random()),
-            Double.toString (Math.random())
-        );
-    }
-    */
-    
     private void assertNotNull (Object obj, String error) throws BLException {
         if (obj == null)
             throw new BLException (error);
