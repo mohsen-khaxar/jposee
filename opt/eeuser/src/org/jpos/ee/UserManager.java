@@ -96,6 +96,22 @@ public class UserManager {
         return pass.equals (computedPass);
     }
     /**
+     * @param u the user
+     * @param clearpass
+     * @return true if password matches
+     * @throws BLException if invalid user/pass
+     * @throws HibernateException on low level hibernate related exception
+     */
+    public boolean checkPassword (User u, String clearpass)
+        throws HibernateException, BLException
+    {
+        assertNotNull (clearpass, "Invalid pass");
+        String password = u.getPassword();
+        assertNotNull (password, "Password is null");
+        return password.equals (getHash(clearpass));
+    }
+
+    /**
      * @return all users
      * @throws HibernateException on low level hibernate related exception
      */
