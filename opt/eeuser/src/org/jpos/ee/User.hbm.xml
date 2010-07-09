@@ -11,7 +11,7 @@
     <property name="nick" type="string">
      <column name="nick" sql-type="varchar(32)" unique="true" not-null="true" />
     </property>
-    <property name="password" length="32" type="string" />
+    <property name="password" length="40" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />  
@@ -30,7 +30,7 @@
       <list-index column="id"/>
       <composite-element class="org.jpos.ee.PasswordHistory">
        <property name="value" type="string">
-       <column name="value" sql-type="varchar(32)" not-null="true" />
+       <column name="value" sql-type="varchar(40)" not-null="true" />
        </property>
       </composite-element>
     </list>
