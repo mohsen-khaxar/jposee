@@ -69,12 +69,27 @@ public class UserManager {
      * @throws BLException if invalid user/pass
      * @throws HibernateException on low level hibernate related exception
      */
-    public User getUserByNick (String nick, String seed, String pass) 
+    public User getUserByNick (String nick, String seed, String pass)
         throws HibernateException, BLException
     {
         User u = getUserByNick (nick);
         assertNotNull (u, "User does not exist");
         assertTrue (checkPassword (u, seed, pass), "Invalid password");
+        return u;
+    }
+    /**
+     * @param nick name.
+     * @param pass hash
+     * @return the user
+     * @throws BLException if invalid user/pass
+     * @throws HibernateException on low level hibernate related exception
+     */
+    public User getUserByNick (String nick, String pass)
+        throws HibernateException, BLException
+    {
+        User u = getUserByNick (nick);
+        assertNotNull (u, "User does not exist");
+        assertTrue (checkPassword (u, pass), "Invalid password");
         return u;
     }
     /**
@@ -108,7 +123,7 @@ public class UserManager {
         assertNotNull (clearpass, "Invalid pass");
         String password = u.getPassword();
         assertNotNull (password, "Password is null");
-        return password.equals (getHash(clearpass));
+        return password.equals (getHash(u.getNick(), clearpass));
     }
 
     /**
