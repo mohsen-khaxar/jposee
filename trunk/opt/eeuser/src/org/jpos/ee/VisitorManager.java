@@ -38,6 +38,12 @@ public class VisitorManager {
     public static final String COOKIE_NAME       = "JPOSEE";
     public static final int    COOKIE_EXPIRATION = 365*24*3600;
 
+    public VisitorManager (DB db) {
+        this (db.session());
+    }
+    public VisitorManager (DB db, Cookie[] cookies) {
+        this (db.session(), cookies);
+    }
     public VisitorManager (Session session) {
         super ();
         this.session = session;
