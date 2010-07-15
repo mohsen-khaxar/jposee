@@ -21,8 +21,6 @@ package org.jpos.ee;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import java.util.Date;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -40,11 +38,10 @@ public class User extends Cloneable implements Serializable {
     private Set<Permission> perms;
     private Map<String,String> props;
     private Set<Visitor> visitors;
-    private List<Revision> revisions;
     private boolean deleted;
     private boolean active;
 	private List<PasswordHistory> passwordhistory;
-	
+
     public User() {
         super();
         perms    = new LinkedHashSet<Permission> ();
@@ -149,14 +146,6 @@ public class User extends Cloneable implements Serializable {
     public boolean hasProperty (String prop) {
         return getProps().get(prop) != null;
     }
-    public void setRevisions (List<Revision> revisions) {
-        this.revisions = revisions;
-    }
-    public List<Revision> getRevisions () {
-        if (revisions == null)
-            revisions = new ArrayList<Revision>();
-        return revisions;
-    }
     public String toString() {
         return new ToStringBuilder(this)
             .append("id", getId())
@@ -174,22 +163,6 @@ public class User extends Cloneable implements Serializable {
         return new HashCodeBuilder()
             .append(getId())
             .toHashCode();
-    }
-    /**
-     * factory method used to create a Revision associated with this user.
-     *
-     * @param info information
-     * @param author associated with this revision
-     * @return a revision entry
-     */
-    public Revision logRevision (String info, User author) {
-        Revision re = new Revision();
-        re.setDate (new Date());
-        re.setInfo (info);
-        re.setRef ("user." + getId());
-        re.setAuthor (author);
-        getRevisions().add (re);
-        return re;
     }
     /**
      * @return nick(id)

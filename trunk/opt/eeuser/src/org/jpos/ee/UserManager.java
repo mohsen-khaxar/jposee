@@ -33,11 +33,13 @@ import org.jpos.iso.ISOUtil;
  */
 @SuppressWarnings("unused")
 public class UserManager {
+    DB db;
     Session session;
     String digest;
 
     public UserManager (DB db) {
         super ();
+        this.db = db;
         this.session = db.session();
     }
     public UserManager (Session session) {
@@ -126,6 +128,13 @@ public class UserManager {
         return password.equals (getHash(u.getNick(), clearpass));
     }
 
+    public void setPassword (User u, String clearpass) {
+        u.addPasswordHistoryValue(u.getPassword());
+        u.setPassword (getHash (u.getNick(), clearpass));
+        RevisionManager revmgr = new RevisionManager(db);
+        revmgr.createRevision(u, "user." + u.getId(), "Password changed");
+        session.saveOrUpdate(u);
+    }
     /**
      * @return all users
      * @throws HibernateException on low level hibernate related exception
