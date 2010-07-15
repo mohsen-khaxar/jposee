@@ -18,6 +18,7 @@
 
 package org.jpos.ee;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -39,5 +40,29 @@ public class RevisionManager {
             .addOrder (Order.desc("id"));
         return crit.list();
     }
+    public List getRevisionsByAuthor (User author)
+        throws HibernateException
+    {
+        Criteria crit = db.session().createCriteria (Revision.class)
+            .add (Restrictions.eq ("author", author))
+            .addOrder (Order.desc("id"));
+        return crit.list();
+    }
+    /**
+     * factory method used to create a Revision associated with this user.
+     *
+     * @param author the revision author
+     * @param ref associated with this revision
+     * @param info information
+     * @return a revision entry
+     */
+    public Revision createRevision (User author, String ref, String info) {
+        Revision re = new Revision();
+        re.setDate (new Date());
+        re.setInfo (info);
+        re.setRef (ref);
+        re.setAuthor (author);
+        db.save (re);
+        return re;
+    }
 }
-
