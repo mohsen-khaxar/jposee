@@ -114,6 +114,15 @@ public class User extends Cloneable implements Serializable {
     public void revokeAll () {
         perms.clear ();
     }
+    public String getPermissionsAsString () {
+        StringBuilder sb = new StringBuilder();
+        for (Permission p : perms) {
+            if (sb.length() > 0)
+                sb.append (", ");
+            sb.append (p.getName());
+        }
+        return sb.toString();
+    }
     public void addPasswordHistoryValue (String passwordhistoryhash) {
         passwordhistory.add (new PasswordHistory(passwordhistoryhash));
     }
