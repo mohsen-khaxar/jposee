@@ -125,8 +125,8 @@ public class DateUtil {
     }
 
    /**
-    * @param date MMDDAA
-    * @param time HHMMSS
+    * @param d MMDDAA
+    * @param t HHMMSS
     * @return Date Object
     */
     public static Date parseDateTime (String d, String t) {
@@ -162,7 +162,7 @@ public class DateUtil {
 	return thisCentury;
     }
    /**
-    * @param time HHMM[SS]
+    * @param t HHMM[SS]
     * @return Date Object
     */
     public static Date parseTime (String t) {
