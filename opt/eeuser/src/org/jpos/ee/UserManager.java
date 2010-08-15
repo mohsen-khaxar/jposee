@@ -125,7 +125,7 @@ public class UserManager {
         assertNotNull (clearpass, "Invalid pass");
         String password = u.getPassword();
         assertNotNull (password, "Password is null");
-        return password.equals (getHash(u.getNick(), clearpass));
+        return password.equals (getHash(Long.toString(u.getId(),16), clearpass));
     }
 
     public void setPassword (User u, String clearpass) {
