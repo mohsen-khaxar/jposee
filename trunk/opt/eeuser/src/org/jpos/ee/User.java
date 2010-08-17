@@ -30,7 +30,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 @SuppressWarnings("unused")
-public class User extends Cloneable implements Serializable {
+public class User extends Cloneable implements Serializable, SoftDelete {
     private long id;
     private String nick;
     private String password;
