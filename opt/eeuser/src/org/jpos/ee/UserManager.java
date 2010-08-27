@@ -102,14 +102,14 @@ public class UserManager {
      * @throws BLException if invalid user/pass
      * @throws HibernateException on low level hibernate related exception
      */
-    public boolean checkPassword (User u, String seed, String pass) 
+    public boolean checkPassword (User u, String seed, String pass)
         throws HibernateException, BLException
     {
         assertNotNull (seed, "Invalid seed");
         assertNotNull (pass, "Invalid pass");
         String password = u.getPassword();
         assertNotNull (password, "Password is null");
-        String computedPass = getHash (seed, password);
+        String computedPass = getHash (seed + password);
         return pass.equals (computedPass);
     }
     /**
@@ -125,13 +125,13 @@ public class UserManager {
         assertNotNull (clearpass, "Invalid pass");
         String password = u.getPassword();
         assertNotNull (password, "Password is null");
-        return password.equals (getHash(Long.toString(u.getId(),16), clearpass));
+        return password.equals (getHash(u.getId(), clearpass));
     }
 
     public void setPassword (User u, String clearpass) {
         if (u.getPassword() != null)
             u.addPasswordHistoryValue(u.getPassword());
-        u.setPassword (getHash (u.getNick(), clearpass));
+        u.setPassword (getHash (u.getId(), clearpass));
         RevisionManager revmgr = new RevisionManager(db);
         revmgr.createRevision(u, "user." + u.getId(), "Password changed");
         session.saveOrUpdate(u);
@@ -146,11 +146,11 @@ public class UserManager {
                 .list();
     }
 
-    public static String getHash (String userName, String pass) {
+    public static String getHash (long id, String pass) {
         String hash = null;
         try {
             MessageDigest md = MessageDigest.getInstance ("SHA");
-            md.update (userName.getBytes());
+            md.update (Long.toString(id,16).getBytes());
             hash = ISOUtil.hexString (
                 md.digest (pass.getBytes())
             ).toLowerCase();
