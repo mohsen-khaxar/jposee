@@ -129,7 +129,8 @@ public class UserManager {
     }
 
     public void setPassword (User u, String clearpass) {
-        u.addPasswordHistoryValue(u.getPassword());
+        if (u.getPassword() != null)
+            u.addPasswordHistoryValue(u.getPassword());
         u.setPassword (getHash (u.getNick(), clearpass));
         RevisionManager revmgr = new RevisionManager(db);
         revmgr.createRevision(u, "user." + u.getId(), "Password changed");
