@@ -243,6 +243,22 @@ public class GLSession {
         return (Account) (iter.hasNext() ? iter.next() : null);
     }
     /**
+     * @return List of charts of accounts.
+     * @throws HibernateException on database errors.
+     * @throws GLException if users doesn't have global READ permission.
+     * @see GLPermission
+     */
+    public List<Account> getCharts ()
+        throws HibernateException, GLException 
+    {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery(
+            "from acct in class org.jpos.gl.CompositeAccount where parent is null"
+        );
+        return q.list();
+    }
+
+    /**
      * @param chart chart of accounts.
      * @param code  account's code.
      * @return account with given code in given chart, or null.
