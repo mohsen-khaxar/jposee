@@ -246,6 +246,9 @@
                 <include name="hibernate.cfg.xml"/>
                 <include name="*.properties"/>
             </fileset>
+            <fileset dir=".">
+                <include name="LICENSEE.asc"/>
+            </fileset>
         </copy>
     </target>
 
