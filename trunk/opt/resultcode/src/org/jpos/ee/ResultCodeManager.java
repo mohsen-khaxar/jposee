@@ -57,7 +57,7 @@ public class ResultCodeManager {
             if (l.size() == 0) {
                 LogEvent evt = db.getLog().createWarn ();
                 evt.addMessage (
-                    "errorloading unconfigured result code '" + rc + "'"
+                    "error loading unconfigured result code '" + rc + "'"
                 );
                 Logger.log (evt);
             } else {
