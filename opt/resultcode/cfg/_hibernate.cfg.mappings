@@ -1,0 +1,4 @@
+
+        <!-- modules/resultcode/cfg/_hibernate.cfg.mappings -->
+        <mapping resource="org/jpos/ee/ResultCode.hbm.xml" />
+
