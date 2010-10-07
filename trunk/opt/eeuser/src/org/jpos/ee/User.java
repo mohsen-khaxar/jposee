@@ -37,7 +37,6 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private String name;
     private Set<Permission> perms;
     private Map<String,String> props;
-    private Set<Visitor> visitors;
     private boolean deleted;
     private boolean active;
 	private List<PasswordHistory> passwordhistory;
@@ -45,7 +44,6 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public User() {
         super();
         perms    = new LinkedHashSet<Permission> ();
-        visitors = new LinkedHashSet<Visitor> ();
         passwordhistory = new LinkedList<PasswordHistory> ();
     }
     public String getNick() {
@@ -96,12 +94,6 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public List getPasswordhistory () {
         return passwordhistory;
     }        
-    public void setVisitors (Set<Visitor> visitors) {
-        this.visitors = visitors;
-    }
-    public Set getVisitors () {
-        return visitors;
-    }
     public boolean hasPermission (String permName) {
         return permName != null && perms.contains(new Permission(permName));
     }

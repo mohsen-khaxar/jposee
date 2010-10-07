@@ -41,11 +41,6 @@
         <index column="propName" type="string" length="32"/>
         <element column="propValue" type="string"/>
     </map>
-
-    <set name="visitors" cascade="all-delete-orphan" lazy="true">
-      <key column="eeuser" />
-      <one-to-many class="org.jpos.ee.Visitor" />
-    </set>
   </class>
 </hibernate-mapping>
 

@@ -1,0 +1,3 @@
+
+        <!-- modules/visitor/cfg/__hibernate.cfg.mappings -->
+        <mapping resource="org/jpos/ee/Visitor.hbm.xml" />
