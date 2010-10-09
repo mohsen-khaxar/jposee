@@ -331,6 +331,22 @@ public class GLSession {
         if (!fast)
             parent.getChildren().add (acct);
     }
+
+    /**
+     * Add a chart of accounts.
+     * Check permissions.
+     *
+     * @param acct chart to add
+     * @throws HibernateException on error
+     * @throws GLException if user doesn't have write permission
+     */
+    public void addChart (Account acct) 
+        throws HibernateException, GLException 
+    {
+        checkPermission (GLPermission.WRITE);
+        session.save (acct);
+    }
+
     /**
      * @param chart chart of accounts.
      * @param code  account's code.
