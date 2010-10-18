@@ -20,18 +20,10 @@ package org.jpos.gl;
 
 import java.util.*;
 import java.math.BigDecimal;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.Criteria;
-import org.hibernate.LockMode;
-import org.hibernate.ScrollMode;
-import org.hibernate.Transaction;
-import org.hibernate.ScrollableResults;
-import org.hibernate.HibernateException;
-import org.hibernate.ObjectNotFoundException;
+
+import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.type.LongType;
 import org.apache.commons.logging.Log;
@@ -996,7 +988,7 @@ public class GLSession {
             throw new GLException ("Invalid checkpoint date");
         checkPermission (GLPermission.CHECKPOINT, journal);
         // Transaction tx = session.beginTransaction();
-        session.lock (journal, LockMode.UPGRADE);
+        session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
         createCheckpoint0 (journal, acct, date, threshold, layers);
         // tx.commit();
     }
@@ -1047,7 +1039,7 @@ public class GLSession {
         throws HibernateException, GLException
     {
         checkPermission (GLPermission.POST, journal);
-        session.lock (journal, LockMode.UPGRADE);
+        session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
     }
     /**
      * Lock an account in a given journal.
@@ -1063,7 +1055,7 @@ public class GLSession {
         AccountLock lck = getLock (journal, acct, false);
         if (lck == null) {
             // Transaction tx = session.beginTransaction();
-            session.lock (journal, LockMode.UPGRADE);
+            session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
             lck = getLock (journal, acct, true);
             // tx.commit();
             lck = getLock (journal, acct, false);   // re-get it
@@ -1126,7 +1118,7 @@ public class GLSession {
     {
         checkPermission (GLPermission.WRITE, journal);
         // Transaction tx = session.beginTransaction();
-        session.lock (journal, LockMode.UPGRADE);
+        session.buildLockRequest(LockOptions.UPGRADE).lock(journal);
         journal.setLockDate (lockDate);
         // tx.commit();
     }
@@ -1171,7 +1163,7 @@ public class GLSession {
         AccountLock lck = new AccountLock (journal, acct);
         try {
             lck = (AccountLock) 
-                session.load (AccountLock.class, lck, LockMode.UPGRADE);
+                session.load (AccountLock.class, lck, LockOptions.UPGRADE);
         } catch (ObjectNotFoundException e) {
             if (create) 
                 session.save (lck);
