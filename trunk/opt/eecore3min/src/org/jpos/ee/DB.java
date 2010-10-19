@@ -34,7 +34,7 @@ import org.hibernate.engine.CollectionKey;
 import org.hibernate.engine.EntityKey;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.type.Type;
 import org.jpos.util.Log;
 import org.jpos.util.LogEvent;
@@ -74,7 +74,7 @@ public class DB {
             if (cfg != null)
                 return;
 
-            cfg = new AnnotationConfiguration().configure();
+            cfg = new Configuration().configure();
             sf  = cfg.buildSessionFactory();
         }
     }
