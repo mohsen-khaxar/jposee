@@ -1,0 +1,17 @@
+<ha-service class="org.jpos.ha.HAService" logger="Q2">
+ <!--
+    remember:
+    ifconfig eth0 multicast
+    route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
+
+    Sample UP script
+    /sbin/ifconfig eth0:1 xxx.xxx.xxx.xxx
+    send_arp eth0 xxx.xxx.xxx.xxx 001122334455 xxx.xxx.xxx.xxx ffffffffffff
+  -->
+ <property name="group-config" value="cfg/udp.xml" />
+ <property name="group-name"   value="jPOS-HASERVICE" />
+ <property name="up"           value="cfg/up.sh" />
+ <property name="changed"      value="cfg/up.sh" />
+ <property name="down"         value="cfg/down.sh" />
+</ha-service>
+
