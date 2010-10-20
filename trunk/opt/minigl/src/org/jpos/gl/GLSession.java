@@ -101,10 +101,16 @@ public class GLSession {
     {
         super();
         this.db = db;
-        session = db.open();
+        boolean autoClose = false;
+        if (!db.session().isOpen()) {
+            db.open();
+            autoClose = !autoClose;
+        }
+        session = db.session();
         user = getUser (username);
         if (user == null) {
-           close();
+            if (autoClose)
+                close();
            throw new GLException ("Invalid user '" + username + "'");
         }
     }
