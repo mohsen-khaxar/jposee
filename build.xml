@@ -115,6 +115,7 @@
     <target name="main" depends="prepare, copy-bin, manifest">
         <javac srcdir="${build.src}" destdir="${classes.dir}"
             debug="${debug}" nowarn="${nowarn}"
+            includeantruntime="false"
             deprecation="${deprecation}">
             <classpath refid="main.classpath"/>
         </javac>
