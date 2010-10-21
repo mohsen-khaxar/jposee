@@ -56,7 +56,7 @@ public class GLSession {
     /**
      * Construct a GLSession for a given user.
      *
-     * User has to exist in MiniGL gluser table.
+     * User has to exist in MiniGL gluser table unless username is null.
      * @see GLUser
      *
      * @param username the user name.
@@ -69,10 +69,12 @@ public class GLSession {
         super();
         this.db = new DB();
         session = db.open();
-        user = getUser (username);
-        if (user == null) {
-           close();
-           throw new GLException ("Invalid user '" + username + "'");
+        if (username != null) {
+            user = getUser (username);
+            if (user == null) {
+               close();
+               throw new GLException ("Invalid user '" + username + "'");
+            }
         }
     }
     /**
@@ -88,7 +90,7 @@ public class GLSession {
     /**
      * Construct a GLSession for a given user.
      *
-     * User has to exist in MiniGL gluser table.
+     * User has to exist in MiniGL gluser table unless username is null.
      * @see GLUser
      *
      * @param db EE DB
@@ -107,11 +109,13 @@ public class GLSession {
             autoClose = !autoClose;
         }
         session = db.session();
-        user = getUser (username);
-        if (user == null) {
-            if (autoClose)
-                close();
-           throw new GLException ("Invalid user '" + username + "'");
+        if (username != null) {
+            user = getUser (username);
+            if (user == null) {
+                if (autoClose)
+                    close();
+               throw new GLException ("Invalid user '" + username + "'");
+            }
         }
     }
     /**
@@ -180,6 +184,29 @@ public class GLSession {
         throws GLException, HibernateException
     {
         checkPermission (GLPermission.GRANT);
+        GLUser u = getUser (userName);
+        u.revoke (permName);
+    }
+
+        /**
+     * Grant permission to user no matter if we have the premission nor GRANT.
+     *
+     * @param userName user name
+     * @param permName permission name
+     */
+    public void forceGrant (String userName, String permName) {
+        GLPermission perm = new GLPermission(permName);
+        session.save (perm);
+        GLUser u = getUser (userName);
+        u.grant (perm);
+    }
+    /**
+     * Revoke permission from user no matter if we have the permission nor GRANT.
+     *
+     * @param userName user name
+     * @param permName permission name
+     */
+    public void forceRevoke (String userName, String permName) {
         GLUser u = getUser (userName);
         u.revoke (permName);
     }
