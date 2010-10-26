@@ -104,7 +104,7 @@ public class GLSession {
         super();
         this.db = db;
         boolean autoClose = false;
-        if (!db.session().isOpen()) {
+        if (db.session() == null) {
             db.open();
             autoClose = !autoClose;
         }
