@@ -1,0 +1,4 @@
+<ruby class='org.jpos.jruby.Ruby'>
+  puts "Hello jRuby!"
+</ruby>
+
