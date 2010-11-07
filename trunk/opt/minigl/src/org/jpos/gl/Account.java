@@ -36,7 +36,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  *
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
-public abstract class Account implements Serializable, Comparable {
+
+public abstract class Account implements Serializable, Comparable, Cloneable {
     private long id;
     /**
      * 0 - type is undefined (used in top level [chart-of=]account)
@@ -78,6 +79,7 @@ public abstract class Account implements Serializable, Comparable {
      * Internal id.
      * @param id internal Id
      */
+    @SuppressWarnings("unused")
     public void setId (long id) {
         this.id = id;
     }
@@ -182,6 +184,7 @@ public abstract class Account implements Serializable, Comparable {
      * an IllegalArgumentException.
      * @param children a list of childrens
      */
+    @SuppressWarnings("unused")
     public abstract void setChildren (Set<Account> children);
 
     /**
@@ -371,6 +374,10 @@ public abstract class Account implements Serializable, Comparable {
             return getCode().compareTo (((Account)o).getCode());
         }
         return 1;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }
 
