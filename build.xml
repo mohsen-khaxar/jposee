@@ -299,6 +299,7 @@ Sealed: false</concat>
       <mkdir dir="${test-classes.dir}"/>
       <javac srcdir="${build.test}" destdir="${test-classes.dir}"
          debug="${debug}" nowarn="${nowarn}"
+         includeantruntime="false"
          deprecation="${deprecation}">
          <classpath refid="main.classpath" />
       </javac>
@@ -335,6 +336,7 @@ Sealed: false</concat>
       <mkdir dir="${test-classes.dir}"/>
       <javac srcdir="${build.test}" destdir="${test-classes.dir}"
          debug="${debug}" nowarn="${nowarn}"
+         includeantruntime="false"
          deprecation="${deprecation}">
          <classpath refid="main.classpath" />
       </javac>
