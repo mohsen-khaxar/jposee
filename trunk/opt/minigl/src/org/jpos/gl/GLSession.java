@@ -304,6 +304,7 @@ public class GLSession {
         Iterator iter = q.list().iterator();
         return (Account) (iter.hasNext() ? iter.next() : null);
     }
+
     /**
      * Add account to parent.
      * Check permissions, parent's type and optional currency.
@@ -409,6 +410,21 @@ public class GLSession {
         );
         q.setLong ("chart", chart.getId());
         return (List<FinalAccount>) q.list();
+    }
+    /**
+     * @param parent parent account.
+     * @return list of composite accounts children of the parent account
+     * @throws HibernateException on database errors.
+     * @throws GLException if users doesn't have global READ permission.
+     * @see GLPermission
+     */
+    public List<CompositeAccount> getCompositeChildren (Account parent) throws HibernateException, GLException {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery(
+                "from acct in class org.jpos.gl.CompositeAccount where parent=:parent"
+        );
+        q.setParameter ("parent", parent);
+        return (List<CompositeAccount>) q.list();
     }
     /**
      * @param chart chart of accounts.
