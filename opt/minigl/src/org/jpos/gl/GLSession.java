@@ -427,6 +427,21 @@ public class GLSession {
         return (List<CompositeAccount>) q.list();
     }
     /**
+     * @param parent parent account.
+     * @return list of composite accounts children of the parent account
+     * @throws HibernateException on database errors.
+     * @throws GLException if users doesn't have global READ permission.
+     * @see GLPermission
+     */
+    public List<FinalAccount> getFinalChildren (Account parent) throws HibernateException, GLException {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery(
+                "from acct in class org.jpos.gl.FinalAccount where parent=:parent"
+        );
+        q.setParameter ("parent", parent);
+        return (List<FinalAccount>) q.list();
+    }
+    /**
      * @param chart chart of accounts.
      * @return list of all accounts
      * @throws HibernateException on database errors.
