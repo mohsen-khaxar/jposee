@@ -1,0 +1,4 @@
+
+	<property name="connection.url">jdbc:mysql://@dbhost@/@dbname@?autoReconnect=true</property>
+        <property name="connection.username">@dbuser@</property>
+        <property name="connection.password">@dbpass@</property>
