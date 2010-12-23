@@ -123,7 +123,7 @@ public class Thing implements Serializable {
     public String getString (String name) {
         return getStringProps().get(name); 
     }
-    public long getLong (String name) {
+    public Long getLong (String name) {
         return getLongProps().get (name);
     }
     public BigDecimal getBigDecimal (String name) {
