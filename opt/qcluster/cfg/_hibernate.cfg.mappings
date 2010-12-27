@@ -1,0 +1,4 @@
+
+        <!-- QCluster -->
+        <mapping resource="org/jpos/qcluster/QBeanInfo.hbm.xml" />
+

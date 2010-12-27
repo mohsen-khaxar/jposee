@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<qcluster class="org.jpos.qcluster.QCluster" logger="Q2">
+ <property name="interval" value="10000" />
+ <property name="node" value="Q2.001" />
+</qcluster>
+
