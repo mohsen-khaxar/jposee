@@ -1,0 +1,98 @@
+<sect1>
+ <title>QCluster</title>
+ <indexterm>
+  <primary>QCluster</primary>
+ </indexterm>
+
+ <para>
+  <emphasis role='bold'>QCluster</emphasis> is a very simple, yet powerful
+  QBean that you can use to manage a cluster of Q2 nodes.
+ </para>
+
+ <figure>
+  <title>QCluster</title>
+  <mediaobject>
+   <imageobject role='fo'>
+    <imagedata fileref="images/qcluster/qcluster.jpg" format="jpeg"/>
+   </imageobject>
+   <imageobject role='html'>
+    <imagedata fileref="../shared/images/qcluster/qcluster.jpg" format="jpeg"/>
+   </imageobject>
+  </mediaobject>
+ </figure>
+
+ <para>
+  Each Q2 node has to deploy a <literal>org.jpos.qcluster.QCluster</literal> QBean
+  with a configuration like this:
+  <screen><![CDATA[
+   <qcluster class="org.jpos.qcluster.QCluster" logger="Q2">
+    <property name="interval" value="10000" />
+    <property name="node" value="Q2.001" />
+   </qcluster>
+  ]]></screen>
+ </para>
+ <para>
+  QCluster relies on a central SQL repository that has a 
+  <literal>qbean</literal> table with a structure like this:
+
+  <screen>
+    CREATE TABLE qbean (
+        id bigint(20) NOT NULL auto_increment,
+        node varchar(64) default NULL,
+        name varchar(64) default NULL,
+        config text,
+        timestamp bigint(20) default NULL,
+        active tinyint(1) default NULL,
+        PRIMARY KEY  (id)
+    )
+  </screen>
+  which is produced by Hibernate based on
+  <literal>org.jpos.qcluster.QBeanInfo</literal> entity.
+ </para>
+
+ <para>
+  QCluster scans the qbean table looking for 
+  <emphasis role="bold">updated</emphasis> 
+  <emphasis role="italic">(timestamp greater than a given value)</emphasis> 
+  and
+  <emphasis role="bold">active</emphasis>
+  qbean descriptors and deploys them to its local deploy directory.
+ </para>
+
+ <para>
+  In the same way, it scans the qbean table looking for 
+  <emphasis role="bold">inactive</emphasis> qbeans, and
+  undeploy them from the local deploy directory.
+ </para>
+
+ <para>
+  The QBA <footnote>QBean Administrator</footnote> can deploy arbitrary
+  QBeans in individual nodes, but the expected configuration will have
+  just two initial qbeans:
+
+  <itemizedlist>
+   <listitem><emphasis role="bold">00_logger</emphasis></listitem>
+   <listitem><emphasis role="bold">02_qcluster</emphasis></listitem>
+  </itemizedlist>
+
+  <tip>
+   If for some reason Q2 has to be restarted, the restart scripts
+   should remove all XML descriptors in the deploy directory and
+   just install pristine versions of <literal>00_logger.xml</literal>
+   and <literal>02_qcluster.xml</literal>
+  </tip>
+ </para>
+
+ <sect2>
+  <title>Dependencies</title>
+  <para>
+   QCluster requires the following modules:
+   <itemizedlist>
+    <listitem>hibernate</listitem>
+    <listitem>hibernate_xxx</listitem>
+    <listitem>eecore</listitem>
+   </itemizedlist>
+  </para>
+ </sect2>
+</sect1>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping 
+  SYSTEM "http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
+
+<hibernate-mapping>
+  <class name="org.jpos.qcluster.QBeanInfo" table="qbean">
+    <id name="id" column="id" type="long">
+      <generator class="native" />
+    </id>
+    <property name="node"       type="string" length="64" />
+    <property name="name"       type="string" length="64" />
+    <property name="config"     type="text" />
+    <property name="timestamp"  type="long" />
+    <property name="active"     type="boolean" />
+  </class>
+</hibernate-mapping>
+
