@@ -123,6 +123,8 @@ public class GLSession {
      * User has to exist in MiniGL gluser table.
      * @param db EE DB
      * @see GLUser
+     * @throws org.hibernate.HibernateException on hibernate exception
+     * @throws GLException on GL level exception
      */
     public GLSession (DB db) throws HibernateException, GLException {
         this (db, System.getProperty ("user.name"));
@@ -1206,6 +1208,48 @@ public class GLSession {
 
         query.executeUpdate();
     }
+
+    public GLTransactionGroup createGroup (String name, List<GLTransaction> transactions) {
+        GLTransactionGroup group = new GLTransactionGroup (name);
+        Set txns = new HashSet();
+        for (GLTransaction t : transactions)
+            txns.add (t);
+        group.setTransactions(txns);
+        session().save (group);
+        return group;
+    }
+
+    public GLTransactionGroup findTransactionGroup (String name) {
+        Criteria crit = session.createCriteria (GLTransactionGroup.class)
+                .add (Restrictions.eq ("name", name));
+        crit.setMaxResults (1);
+        return (GLTransactionGroup) crit.uniqueResult();
+    }
+
+    public BigDecimal getBalance
+            (Journal journal, Account acct, GLTransactionGroup group, short[] layers)
+            throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ, journal);
+        BigDecimal balance = ZERO;
+        for (GLTransaction transaction : (Set<GLTransaction>) group.getTransactions()) {
+            if (transaction.getJournal().equals (journal)) {
+                for (GLEntry entry : (List<GLEntry>) transaction.getEntries()) {
+                    if (acct.equals (entry.getAccount()) && entry.hasLayers(layers)) {
+                        if (entry.isIncrease ()) {
+                            balance = balance.add (entry.getAmount());
+                        }
+                        else if (entry.isDecrease()) {
+                            balance = balance.subtract (entry.getAmount());
+                        }
+                    }
+                }
+            }
+        }
+        return balance;
+    }
+
+
 
     // -----------------------------------------------------------------------
     // PUBLIC HELPERS 
