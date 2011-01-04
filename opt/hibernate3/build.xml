@@ -4,6 +4,7 @@
  <property name="module.lib.dir" value="${modules.dir}/${module.name}/lib"/>
  <property name="module.cfg.dir" value="${modules.dir}/${module.name}/cfg"/>
  <property name="classes.dir" value="${build.dir}/classes"/>
+ <property name="test-classes.dir" value="${build.dir}/test-classes"/>
 
  <target name="prepare" />
  <target name="config">
@@ -50,6 +51,8 @@
    file="${build.cfg}/ehcache.xml" 
    filtering="true"
    tofile="${classes.dir}/ehcache.xml" overwrite="true" />
+  <copy file="${build.dir}/cfg/connection.xml" 
+      tofile="${test-classes.dir}/cfg/connection.xml" />
  </target>
 </project>
 
