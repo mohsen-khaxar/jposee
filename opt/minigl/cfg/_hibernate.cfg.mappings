@@ -5,6 +5,7 @@
         <mapping resource="org/jpos/gl/Journal.hbm.xml"/>
         <mapping resource="org/jpos/gl/Account.hbm.xml"/>
         <mapping resource="org/jpos/gl/GLTransaction.hbm.xml"/>
+        <mapping resource="org/jpos/gl/GLTransactionGroup.hbm.xml"/>
         <mapping resource="org/jpos/gl/GLEntry.hbm.xml"/>
         <mapping resource="org/jpos/gl/RuleInfo.hbm.xml"/>
         <mapping resource="org/jpos/gl/Checkpoint.hbm.xml"/>

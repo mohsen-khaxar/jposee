@@ -35,6 +35,7 @@ public class AllTests {
         suite.addTest (new TestSuite (SummarizeTest.class));
         suite.addTest (new TestSuite (LayersTest.class));
         suite.addTest (new TestSuite (FindTransactionsTest.class));
+        suite.addTest (new TestSuite (TransactionGroupTest.class));
         return suite;
     }
 }
