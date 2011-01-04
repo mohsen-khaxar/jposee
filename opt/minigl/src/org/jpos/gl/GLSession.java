@@ -1436,7 +1436,7 @@ public class GLSession {
             } else {
                 throw new GLException ("Account " + a + " has wrong type");
             }
-            session.evict (a);
+            // session.evict (a);  FIXME this conflicts with r251 (cascade=evict genearting a failed to lazily initialize a collection
         }
         return balance;
     }
