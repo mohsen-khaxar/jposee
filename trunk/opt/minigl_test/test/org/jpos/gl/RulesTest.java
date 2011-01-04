@@ -52,7 +52,6 @@ public class RulesTest extends TestBase {
                     cashUS, amount, cashPesos, amount, (short) 0);
 
         Transaction tx = gls.beginTransaction();
-        System.out.println ("---- testSimplePost tx: " + tx);
         gls.post (journal, txn);
         tx.commit();
     }
