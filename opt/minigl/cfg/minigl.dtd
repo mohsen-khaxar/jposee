@@ -26,14 +26,16 @@
 
 <!ELEMENT composite-account (description?,(account|composite-account)*) >
 <!ATTLIST composite-account code CDATA #REQUIRED>
+<!ATTLIST composite-account created CDATA #IMPLIED>
 <!ATTLIST composite-account type (debit|credit) #REQUIRED>
 
 <!ELEMENT account (description?) >
 <!ATTLIST account code CDATA #REQUIRED>
 <!ATTLIST account type (debit|credit) #REQUIRED>
+<!ATTLIST account created CDATA #IMPLIED>
 <!ATTLIST account currency CDATA #IMPLIED>
 
-<!ELEMENT journal (name+,start?,end?,status+,chart+,layer*,grant*,rule*) >
+<!ELEMENT journal (name+,start?,end?,status?,chart+,layer*,grant*,rule*) >
 <!ELEMENT start (#PCDATA) >
 <!ELEMENT end (#PCDATA) >
 <!ELEMENT status (#PCDATA) >
@@ -45,6 +47,7 @@
 <!ELEMENT layers (#PCDATA) >
 
 <!ELEMENT transaction (detail?,tags?,entry+) >
+<!ATTLIST transaction id CDATA #IMPLIED>
 <!ATTLIST transaction date CDATA #REQUIRED>
 <!ATTLIST transaction post-date CDATA #REQUIRED>
 <!ATTLIST transaction journal CDATA #REQUIRED>
