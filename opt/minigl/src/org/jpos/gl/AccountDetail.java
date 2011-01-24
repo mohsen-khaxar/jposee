@@ -89,7 +89,7 @@ public class AccountDetail {
     public Date getEnd() {
         return end;
     }
-    public List getEntries() {
+    public List<GLEntry> getEntries() {
         return entries;
     }
     public short[] getLayers() {
