@@ -5,5 +5,5 @@ rm -f deploy/shutdown.xml
 java -server \
     -Xmx1G \
     -Dorg.mortbay.xml.XmlParser.NotValidating=true \
-    -jar jpos-ee.jar "$*"
+    -jar jpos-ee.jar $*
 
