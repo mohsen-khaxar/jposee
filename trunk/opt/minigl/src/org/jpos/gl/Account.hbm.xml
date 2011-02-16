@@ -12,7 +12,7 @@
     <discriminator column="subclass" type="string" length="1" />
 
     <property name="code">
-     <column name="code" sql-type="varchar(32)" 
+     <column name="code" sql-type="varchar(64)" 
         not-null="true" index="acctCode" />
     </property>
     <property name="description" />
