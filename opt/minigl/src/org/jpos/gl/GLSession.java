@@ -226,7 +226,7 @@ public class GLSession {
         while (iter.hasNext()) {
             GLPermission p = (GLPermission) iter.next();
             Journal pj = p.getJournal();
-            if (action.equals (p.getName()) && 
+            if (action.equals (p.getName()) &&
                 (pj == null || (pj.getId() == j.getId())))
             {
                 return true;
@@ -551,6 +551,22 @@ public class GLSession {
         q.setParameter ("name", name);
         Iterator iter = q.list().iterator();
         return (Journal) (iter.hasNext() ? iter.next() : null);
+    }
+
+    /**
+    * @return list of all journals
+    * @throws HibernateException on database errors.
+    * @throws GLException if users doesn't have global READ permission.
+    * @see GLPermission
+    */
+    public List<Journal> getAllJournals ()
+        throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ);
+        Query q = session.createQuery (
+            "from acct in class org.jpos.gl.Journal order by chart"
+        );
+        return (List<Journal>) q.list();
     }
 
     /**
