@@ -48,8 +48,8 @@ public class SysConfigManager {
             if (prefix != null)
                 name = prefix + name;
             SysConfig cfg = (SysConfig) 
-                db.session().load (SysConfig.class, name);
-            return cfg.getValue() != null;
+                db.session().get (SysConfig.class, name);
+            return cfg != null;
         } catch (ObjectNotFoundException e) {
             // okay to happen
         } catch (HibernateException e) {
