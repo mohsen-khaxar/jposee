@@ -1358,8 +1358,9 @@ public class GLSession {
         throws HibernateException
     {
         Criteria crit = session.createCriteria (Checkpoint.class)
-            .add (Restrictions.eq ("journal", journal))
-            .add (Restrictions.in ("account", accounts));
+            .add (Restrictions.eq ("journal", journal));
+        if (accounts.length > 0)
+            crit = crit.add (Restrictions.in ("account", accounts));
 
         if (layers != null)
             crit.add (Restrictions.eq ("layers", layersToString(layers)));
