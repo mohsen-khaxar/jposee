@@ -798,6 +798,43 @@ public class GLSession {
     }
 
     /**
+     * @param journal the journal.
+     * @param start date (inclusive).
+     * @param end date (inclusive).
+     * @param searchString optional search string
+     * @param findByPostDate true to find by postDate, false to find by timestamp
+     * @return number of transactions
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public Long findTransactionsRowCount
+        (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
+            throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ, journal);
+        String dateField = findByPostDate ? "postDate" : "timestamp";
+        if (findByPostDate) {
+            if (start != null)
+                start = Util.floor (start);
+            if (end != null)
+                end   = Util.ceil (end);
+        }
+        Criteria crit = session.createCriteria (GLTransaction.class)
+            .add (Restrictions.eq ("journal", journal));
+        crit.setProjection(Projections.rowCount());
+        if (start != null && start.equals (end))
+            crit.add (Restrictions.eq (dateField, start));
+        else {
+            if (start != null)
+                crit.add (Restrictions.ge (dateField, start));
+            if (end != null)
+                crit.add (Restrictions.le (dateField, end));
+        }
+        if (searchString != null)
+            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
+        return (Long)crit.uniqueResult();
+    }
+
+    /**
      * @return user object associated with this session.
      */
     public GLUser getUser() {
