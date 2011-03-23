@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 
 import org.hibernate.*;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.type.LongType;
@@ -621,7 +622,7 @@ public class GLSession {
      * @param end date (inclusive).
      * @param description summary transaction's description
      * @return GLTransaction a summary transaction
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      * @throws HibernateException on database/mapping errors
      */
     public GLTransaction summarize 
@@ -677,7 +678,7 @@ public class GLSession {
      * @param journal the journal.
      * @param id txn id
      * @return GLTransaction or null
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public GLTransaction getTransaction (Journal journal, long id)
         throws HibernateException, GLException
@@ -706,7 +707,7 @@ public class GLSession {
      * @param pageNumber the page number
      * @param pageSize the page size
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactions 
         (Journal journal, Date start, Date end, String searchString, 
@@ -749,13 +750,51 @@ public class GLSession {
      * @param searchString optional search string
      * @param findByPostDate true to find by postDate, false to find by timestamp
      * @return list of transactions
-     * @throws GLException if user doesn't have READ permission on this jounral.
+     * @throws GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactions 
         (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
         throws HibernateException, GLException
     {
         return findTransactions (journal, start, end, searchString, findByPostDate, 0, 0);
+    }
+
+    /**
+     * @param journal the journal.
+     * @param start date (inclusive).
+     * @param end date (inclusive).
+     * @param searchString optional search string
+     * @param findByPostDate true to find by postDate, false to find by timestamp
+     * @return list of transactions' ids
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public List findTransactionsIds
+        (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
+            throws HibernateException, GLException
+    {
+        checkPermission (GLPermission.READ, journal);
+        String dateField = findByPostDate ? "postDate" : "timestamp";
+        if (findByPostDate) {
+            if (start != null)
+                start = Util.floor (start);
+            if (end != null)
+                end   = Util.ceil (end);
+        }
+        Criteria crit = session.createCriteria (GLTransaction.class)
+            .add (Restrictions.eq ("journal", journal));
+        crit.setProjection(Projections.id());
+        if (start != null && start.equals (end))
+            crit.add (Restrictions.eq (dateField, start));
+        else {
+            if (start != null)
+                crit.add (Restrictions.ge (dateField, start));
+            if (end != null)
+                crit.add (Restrictions.le (dateField, end));
+        }
+        if (searchString != null)
+            crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
+
+        return crit.list();
     }
 
     /**
@@ -1052,7 +1091,7 @@ public class GLSession {
         (Journal journal, Account acct, Date date, int threshold)
         throws HibernateException, GLException
     {
-        createCheckpoint (journal, acct, date, threshold, LAYER_ZERO);
+        createCheckpoint(journal, acct, date, threshold, LAYER_ZERO);
     }
     /**
      * @param journal the Journal
