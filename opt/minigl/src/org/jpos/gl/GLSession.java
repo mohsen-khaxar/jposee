@@ -769,7 +769,8 @@ public class GLSession {
      * @throws GLException if user doesn't have READ permission on this journal.
      */
     public List findTransactionsIds
-        (Journal journal, Date start, Date end, String searchString, boolean findByPostDate)
+        (Journal journal, Date start, Date end, String searchString,
+         boolean findByPostDate, int pageNumber, int pageSize)
             throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
@@ -793,7 +794,10 @@ public class GLSession {
         }
         if (searchString != null)
             crit.add (Restrictions.like ("detail", "%" + searchString + "%"));
-
+        if (pageSize > 0 && pageNumber > 0) {
+            crit.setMaxResults (pageSize);
+            crit.setFirstResult (pageSize * (pageNumber - 1));
+        }
         return crit.list();
     }
 
