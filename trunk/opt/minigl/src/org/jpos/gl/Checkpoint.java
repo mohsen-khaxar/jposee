@@ -83,7 +83,7 @@ public class Checkpoint implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("date", getDate())
-            .append("laters", getLayers())
+            .append("layers", getLayers())
             .append("journal", getJournal())
             .append("account", getAccount())
             .toString();
