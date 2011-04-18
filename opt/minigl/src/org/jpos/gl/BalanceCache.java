@@ -78,7 +78,7 @@ public class BalanceCache implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
             .append("ref", getRef())
-            .append("laters", getLayers())
+            .append("layers", getLayers())
             .append("journal", getJournal())
             .append("account", getAccount())
             .toString();
