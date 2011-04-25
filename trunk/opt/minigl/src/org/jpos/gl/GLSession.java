@@ -688,7 +688,7 @@ public class GLSession {
         try {
             txn = (GLTransaction) 
                 session.load (GLTransaction.class, new Long(id));
-            if (txn.getJournal() != journal)
+            if (!txn.getJournal().equals(journal))
                 throw new GLException (
                     "The transaction does not belong to the specified journal"
                 );
