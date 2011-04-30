@@ -108,6 +108,18 @@ public abstract class TxnSupport extends Log
         for (int i=0; i<props.length; i++)
             assertNotNull (map.get (props[i]), message);
     }
+    protected void assertNull (Object obj, String message)
+        throws BLException
+    {
+        if (obj != null)
+            throw new BLException (message);
+    }
+    protected void assertNull (Object obj, String message, String detail)
+        throws BLException
+    {
+        if (obj != null)
+            throw new BLException (message, detail);
+    }
     protected void checkPoint (Context ctx) {
         String checkPointMessage = cfg.get ("checkpoint", null);
         if (checkPointMessage != null)
