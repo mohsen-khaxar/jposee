@@ -1679,6 +1679,10 @@ public class GLSession {
         return list;        
     }
 
+    public String toString() {
+        return super.toString() + "[DB=" + db.toString() + "]";
+    }
+
     /*
     private void dumpRules (Collection rules) {
         log.warn ("--- rules ---");
