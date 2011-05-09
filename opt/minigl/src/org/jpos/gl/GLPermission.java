@@ -21,10 +21,10 @@ package org.jpos.gl;
 /**
  * Permissions are associated with Users and optionally with Journals.
  *
- * A {@link User} can have some system wide permissions and some
+ * A User can have some system wide permissions and some
  * others specific to a given {@link Journal}.
  *
- * @see User
+ * @see GLUser
  * @see Journal
  * @author <a href="mailto:apr@jpos.org">Alejandro Revilla</a>
  */
@@ -43,8 +43,6 @@ public class GLPermission {
 
     /**
      * Constructs a Permission object with a "" name.
-     *
-     * The name can be modified later by calling {@link #setName}.
      */
     public GLPermission () {
         super ();
