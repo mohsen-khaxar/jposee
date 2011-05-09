@@ -20,7 +20,6 @@ package org.jpos.gl;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -85,7 +84,7 @@ public class BalanceCache implements Serializable {
     }
     public boolean equals(Object other) {
         if ( (this == other ) ) return true;
-        if ( !(other instanceof Checkpoint) ) return false;
+        if ( !(other instanceof BalanceCache) ) return false;
         BalanceCache castOther = (BalanceCache) other;
         return new EqualsBuilder()
             .append(this.getRef(), castOther.getRef())
@@ -103,5 +102,4 @@ public class BalanceCache implements Serializable {
             .append(getAccount())
             .toHashCode();
     }
-
 }
