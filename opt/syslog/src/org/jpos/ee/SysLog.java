@@ -20,6 +20,9 @@ package org.jpos.ee;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 @SuppressWarnings("unused")
@@ -130,5 +133,17 @@ public class SysLog implements Serializable {
         return new ToStringBuilder(this)
             .append("id", getId())
             .toString();
+    }
+    public boolean equals(Object other) {
+        if ( !(other instanceof SysLog) ) return false;
+        SysLog castOther = (SysLog) other;
+        return new EqualsBuilder()
+            .append(this.getId(), castOther.getId())
+            .isEquals();
+    }
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(getId())
+            .toHashCode();
     }
 }

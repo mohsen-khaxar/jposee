@@ -20,25 +20,18 @@ package org.jpos.ee;
 
 import java.io.Serializable;
 import java.util.Map;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-
-/** @author Hibernate CodeGenerator */
+@SuppressWarnings("unused")
 public class ResultCode implements Serializable {
-
-    /** identifier field */
     private Long id;
-
-    /** nullable persistent field */
     private String mnemonic;
-
-    /** nullable persistent field */
     private String description;
-
-    /** persistent field */
     private Map locales;
 
-    /** full constructor */
     public ResultCode(Long id, String mnemonic, String description, Map locales) {
         this.id = id;
         this.mnemonic = mnemonic;
@@ -46,11 +39,9 @@ public class ResultCode implements Serializable {
         this.locales = locales;
     }
 
-    /** default constructor */
     public ResultCode() {
     }
 
-    /** minimal constructor */
     public ResultCode(Long id, Map locales) {
         this.id = id;
         this.locales = locales;
@@ -93,5 +84,16 @@ public class ResultCode implements Serializable {
             .append("id", getId())
             .toString();
     }
-
+    public boolean equals(Object other) {
+        if ( !(other instanceof ResultCode) ) return false;
+        ResultCode castOther = (ResultCode) other;
+        return new EqualsBuilder()
+            .append(this.getId(), castOther.getId())
+            .isEquals();
+    }
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(getId())
+            .toHashCode();
+    }
 }
