@@ -141,5 +141,17 @@ public class Thing implements Serializable {
             .append("type", getType())
             .toString();
     }
+    public boolean equals(Object other) {
+        if ( !(other instanceof Thing) ) return false;
+        Thing castOther = (Thing) other;
+        return new EqualsBuilder()
+            .append(this.getId(), castOther.getId())
+            .isEquals();
+    }
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .append(getId())
+            .toHashCode();
+    }
 }
 
