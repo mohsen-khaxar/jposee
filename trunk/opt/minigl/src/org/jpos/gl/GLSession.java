@@ -709,10 +709,10 @@ public class GLSession {
      * @return list of transactions
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public List findTransactions 
-        (Journal journal, Date start, Date end, String searchString, 
-         boolean findByPostDate, int pageNumber, int pageSize)
-        throws HibernateException, GLException
+    public Criteria createFindTransactionsCriteria
+        (Journal journal, Date start, Date end, String searchString,
+     boolean findByPostDate, int pageNumber, int pageSize)
+            throws HibernateException, GLException
     {
         checkPermission (GLPermission.READ, journal);
         String dateField = findByPostDate ? "postDate" : "timestamp";
@@ -723,14 +723,14 @@ public class GLSession {
                 end   = Util.ceil (end);
         }
         Criteria crit = session.createCriteria (GLTransaction.class)
-            .add (Restrictions.eq ("journal", journal));
+                .add (Restrictions.eq ("journal", journal));
 
         if (start != null && start.equals (end))
             crit.add (Restrictions.eq (dateField, start));
         else {
-            if (start != null) 
+            if (start != null)
                 crit.add (Restrictions.ge (dateField, start));
-            if (end != null) 
+            if (end != null)
                 crit.add (Restrictions.le (dateField, end));
         }
         if (searchString != null)
@@ -740,7 +740,27 @@ public class GLSession {
             crit.setMaxResults (pageSize);
             crit.setFirstResult (pageSize * (pageNumber - 1));
         }
-        return crit.list();
+        return crit;
+    }
+
+    /**
+     * @param journal the journal.
+     * @param start date (inclusive).
+     * @param end date (inclusive).
+     * @param searchString optional search string
+     * @param findByPostDate true to find by postDate, false to find by timestamp
+     * @param pageNumber the page number
+     * @param pageSize the page size
+     * @return list of transactions
+     * @throws GLException if user doesn't have READ permission on this journal.
+     */
+    public List findTransactions
+        (Journal journal, Date start, Date end, String searchString,
+         boolean findByPostDate, int pageNumber, int pageSize)
+        throws HibernateException, GLException
+    {
+        return createFindTransactionsCriteria
+            (journal, start, end, searchString, findByPostDate,  pageNumber, pageSize).list();
     }
 
     /**
@@ -768,7 +788,7 @@ public class GLSession {
      * @return list of transactions' ids
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public List findTransactionsIds
+    public Criteria createFindTransactionsIdsCriteria
         (Journal journal, Date start, Date end, String searchString,
          boolean findByPostDate, int pageNumber, int pageSize)
             throws HibernateException, GLException
@@ -798,7 +818,15 @@ public class GLSession {
             crit.setMaxResults (pageSize);
             crit.setFirstResult (pageSize * (pageNumber - 1));
         }
-        return crit.list();
+        return crit;
+    }
+    public List findTransactionsIds
+        (Journal journal, Date start, Date end, String searchString,
+         boolean findByPostDate, int pageNumber, int pageSize)
+            throws HibernateException, GLException
+    {
+        return createFindTransactionsIdsCriteria
+            (journal, start, end, searchString, findByPostDate, pageNumber, pageSize).list();
     }
 
     /**
