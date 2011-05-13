@@ -788,7 +788,7 @@ public class GLSession {
      * @return list of transactions' ids
      * @throws GLException if user doesn't have READ permission on this journal.
      */
-    public Criteria createFindTransactionsIdsCriteria
+    public List findTransactionsIds
         (Journal journal, Date start, Date end, String searchString,
          boolean findByPostDate, int pageNumber, int pageSize)
             throws HibernateException, GLException
@@ -818,15 +818,7 @@ public class GLSession {
             crit.setMaxResults (pageSize);
             crit.setFirstResult (pageSize * (pageNumber - 1));
         }
-        return crit;
-    }
-    public List findTransactionsIds
-        (Journal journal, Date start, Date end, String searchString,
-         boolean findByPostDate, int pageNumber, int pageSize)
-            throws HibernateException, GLException
-    {
-        return createFindTransactionsIdsCriteria
-            (journal, start, end, searchString, findByPostDate, pageNumber, pageSize).list();
+        return crit.list();
     }
 
     /**
