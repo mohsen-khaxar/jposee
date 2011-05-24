@@ -1194,6 +1194,7 @@ public class GLSession {
             }
         }
         else if (acct instanceof FinalAccount) {
+            lock (journal, acct);
             balance = getBalances (journal, acct, null, true, layers, maxId) [0];
             BalanceCache c = getBalanceCache (journal, acct, layers);
             if (c == null) {
@@ -1384,16 +1385,10 @@ public class GLSession {
     private AccountLock getLock (Journal journal, Account acct, boolean create) 
         throws HibernateException
     {
-        AccountLock lck = new AccountLock (journal, acct);
-        try {
-            lck = (AccountLock) 
-                session.load (AccountLock.class, lck, LockOptions.UPGRADE);
-        } catch (ObjectNotFoundException e) {
-            if (create) 
-                session.save (lck);
-            else
-                lck = null;
-        }
+        AccountLock key = new AccountLock (journal, acct);
+        AccountLock lck = (AccountLock) session.get (AccountLock.class, key, LockOptions.UPGRADE);
+        if (lck == null && create)
+            session.save (lck = key);
         return lck;
     }
     private void createCheckpoint0 
