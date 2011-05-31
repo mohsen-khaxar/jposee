@@ -62,7 +62,8 @@ public class TestRunner
         packager = new XMLPackager();
     }
     protected void startService() {
-        new Thread(this).start();
+        for (int i=0; i<cfg.getInt("sessions", 1); i++)
+            new Thread(this).start();
     }
     public void run () {
         try {
