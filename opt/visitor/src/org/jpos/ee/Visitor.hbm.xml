@@ -4,7 +4,6 @@
 
 <hibernate-mapping>
   <class name="org.jpos.ee.Visitor" table="visitor">
-    <meta attribute="extends">org.jpos.ee.VisitorBase</meta>
     <id name="id" column="id" type="string" length="36">
       <generator class="assigned" />
     </id>
