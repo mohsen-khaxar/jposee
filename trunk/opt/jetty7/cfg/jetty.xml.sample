@@ -109,6 +109,17 @@
       </Arg>
     </Call>
 
+    <Ref id="RequestLog">
+      <Set name="requestLog">
+        <New id="RequestLogImpl" class="org.eclipse.jetty.server.NCSARequestLog">
+          <Arg><SystemProperty name="jetty.logs" default="./log"/>/yyyy_mm_dd.request.log</Arg>
+          <Set name="retainDays">90</Set>
+          <Set name="append">true</Set>
+          <Set name="extended">false</Set>
+          <Set name="LogTimeZone">GMT</Set>
+         </New>
+      </Set>
+    </Ref>
 
     <!-- =========================================================== -->
     <!-- extra options                                               -->
