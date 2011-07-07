@@ -146,6 +146,20 @@ public class DB {
     {
         return session.beginTransaction ();
     }
+    public synchronized void commit() {
+        if (session() != null) {
+            Transaction tx = session().getTransaction();
+            if (tx != null && tx.isActive())
+                tx.commit();
+        }
+    }
+    public synchronized void rollback() {
+        if (session() != null) {
+            Transaction tx = session().getTransaction();
+            if (tx != null && tx.isActive())
+                tx.rollback();
+        }
+    }
     /**
      * @param  timeout in seconds
      * @return newly created Transaction
