@@ -13,8 +13,10 @@
     </property>
     <property name="password" length="40" type="string" />
     <property name="name" length="128" not-null="false" type="string" />
+    <property name="email" length="128" not-null="false" type="string" />
     <property name="active" type="yes_no" />
     <property name="deleted" type="yes_no" />  
+    <property name="verified" type="yes_no" />  
 
     <set name="permissions" lazy="false" table="eeuser_perms" order-by="name" cascade="all-delete-orphan">
      <key column="eeuser" />

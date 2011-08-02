@@ -35,10 +35,12 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private String nick;
     private String password;
     private String name;
+    private String email;
     private Set<Permission> perms;
     private Map<String,String> props;
     private boolean deleted;
     private boolean active;
+    private boolean verified;
 	private List<PasswordHistory> passwordhistory;
 
     public User() {
@@ -57,6 +59,18 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     }
     public void setName(String name) {
         this.name = name;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public boolean isVerified() {
+        return verified;
+    }
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
     public long getId() {
         return id;
