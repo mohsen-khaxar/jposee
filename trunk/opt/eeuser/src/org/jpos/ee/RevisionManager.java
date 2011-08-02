@@ -32,21 +32,23 @@ public class RevisionManager {
     public RevisionManager (DB db) {
         this.db = db;
     }
-    public List getRevisionsByRef (String ref)
+    @SuppressWarnings("unchecked")
+    public List<Revision> getRevisionsByRef (String ref)
         throws HibernateException
     {
         Criteria crit = db.session().createCriteria (Revision.class)
             .add (Restrictions.eq ("ref", ref))
             .addOrder (Order.desc("id"));
-        return crit.list();
+        return (List<Revision>) crit.list();
     }
-    public List getRevisionsByAuthor (User author)
+    @SuppressWarnings("unchecked")
+    public List<Revision> getRevisionsByAuthor (User author)
         throws HibernateException
     {
         Criteria crit = db.session().createCriteria (Revision.class)
             .add (Restrictions.eq ("author", author))
             .addOrder (Order.desc("id"));
-        return crit.list();
+        return (List<Revision>) crit.list();
     }
     /**
      * factory method used to create a Revision associated with this user.
@@ -66,3 +68,4 @@ public class RevisionManager {
         return re;
     }
 }
+
