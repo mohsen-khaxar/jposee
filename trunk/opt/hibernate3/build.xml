@@ -47,12 +47,11 @@
    filtering="true"
    tofile="${classes.dir}/hibernate.cfg.xml" overwrite="true" />
   <delete file="${build.cfg}/hibernate.cfg.tmp" />
-  <!--
   <copy 
    file="${build.cfg}/ehcache.xml" 
    filtering="true"
+   failonerror="false"
    tofile="${classes.dir}/ehcache.xml" overwrite="true" />
-   -->
   <copy file="${build.dir}/cfg/connection.xml" 
       tofile="${test-classes.dir}/cfg/connection.xml" />
  </target>
