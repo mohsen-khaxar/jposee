@@ -24,10 +24,13 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
+import org.hibernate.Session;
+import org.jpos.util.Log;
 
 @SuppressWarnings("unused")
 public class SysConfigManager {
     DB db;
+    private Session session;
     String prefix = "";
 
     public SysConfigManager() {
@@ -38,6 +41,11 @@ public class SysConfigManager {
         super();
         this.db = db;
     }
+
+    public SysConfigManager(Session session) {
+        this.session = session;
+    }
+    
     public void setPrefix (String prefix) {
         this.prefix = prefix;
     }
@@ -49,12 +57,12 @@ public class SysConfigManager {
             if (prefix != null)
                 name = prefix + name;
             SysConfig cfg = (SysConfig) 
-                db.session().get (SysConfig.class, name);
+                getSession().get (SysConfig.class, name);
             return cfg != null;
         } catch (ObjectNotFoundException e) {
             // okay to happen
         } catch (HibernateException e) {
-            db.getLog().warn (e);
+            getLog().warn (e);
         }
         return false;
     }
@@ -62,12 +70,12 @@ public class SysConfigManager {
         try {
             if (prefix != null)
                 name = prefix + name;
-            SysConfig cfg = (SysConfig) db.session().load (SysConfig.class, name);
+            SysConfig cfg = (SysConfig) getSession().load (SysConfig.class, name);
             return cfg.getValue();
         } catch (ObjectNotFoundException e) {
             // okay to happen
         } catch (HibernateException e) {
-            db.getLog().warn (e);
+            getLog().warn (e);
         }
         return defaultValue;
     }
@@ -76,7 +84,7 @@ public class SysConfigManager {
         try {
             if (prefix != null)
                 name = prefix + name;
-            Query query = db.session().createQuery (
+            Query query = getSession().createQuery (
                 "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
             );
             query.setParameter ("name", name);
@@ -87,7 +95,7 @@ public class SysConfigManager {
                 values[i] = (String) iter.next();
             }
         } catch (HibernateException e) {
-            db.getLog().warn (e);
+            getLog().warn (e);
             values = new String[0];
         }
         return values;
@@ -96,12 +104,12 @@ public class SysConfigManager {
     public Iterator<SysConfig> iterator() {
         Query query;
         if (prefix != null) {
-            query = db.session().createQuery (
+            query = getSession().createQuery (
                 "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
             );
             query.setParameter ("name", prefix + "%");
         } else {
-            query = db.session().createQuery (
+            query = getSession().createQuery (
                 "from sysconfig in class org.jpos.ee.SysConfig order by id"
             );
         }
@@ -116,12 +124,12 @@ public class SysConfigManager {
             name = prefix + name;
         try {
             boolean autoCommit = false;
-            Transaction tx = db.session().getTransaction();
+            Transaction tx = getSession().getTransaction();
             if (tx == null || !tx.isActive()) {
-                tx = db.session().beginTransaction();
+                tx = getSession().beginTransaction();
                 autoCommit = true;
             }
-            cfg = (SysConfig) db.session().get (SysConfig.class, name);
+            cfg = (SysConfig) getSession().get (SysConfig.class, name);
             boolean saveIt = false;
             if (cfg == null) {
                 cfg = new SysConfig ();
@@ -132,11 +140,11 @@ public class SysConfigManager {
             cfg.setWritePerm (writePerm);
             cfg.setValue (value);
             if (saveIt)
-                db.session().save (cfg);
+                getSession().save (cfg);
             if (autoCommit)
                 tx.commit();
         } catch (HibernateException e) {
-            db.getLog().warn (e);
+            getLog().warn (e);
         }
     }
     public String get (String name) {
@@ -172,5 +180,16 @@ public class SysConfigManager {
         return v.length() == 0 ? def :
             (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes"));
     }
-}
 
+    protected Session getSession() {
+        if (session != null) {
+            return session;
+        } else {
+            return db.session();
+        }
+    }
+
+    protected Log getLog() {
+        return db.getLog();
+    }
+}
