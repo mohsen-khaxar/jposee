@@ -55,6 +55,7 @@ import org.jpos.iso.ISOUtil;
  *    jpos.mail.smtp.password=somepassword
  *    jpos.mail.smtp.debug=false //Debugs smtp connection
  *    jpos.mail.smtp.attachments=false //If true, sends each event as an attachment, otherwise put them into body 
+ *    jpos.mail.smtp.tls=false //If true, activate TLS 
  * </pre>
  *
  * @author apr@cs.com.uy
@@ -135,6 +136,7 @@ public class OperatorLogListener
         // create some properties and get the default Session
         Properties props = System.getProperties();
         props.put("mail.smtp.host", cfg.get ("jpos.mail.smtp.host", "localhost"));
+        props.setProperty("mail.smtp.starttls.enable", cfg.get("jpos.mail.smtp.tls", "false"));
         props.setProperty("mail.smtp.port",cfg.get ("jpos.mail.smtp.port","25"));
         props.setProperty("mail.smtp.user", from);
         props.setProperty("mail.smtp.auth", Boolean.toString(auth));
