@@ -214,17 +214,7 @@ public class GLSession {
      * @see Journal
      */
     public boolean hasPermission (String action, Journal j) {
-        Iterator iter = user.getPermissions().iterator();
-        while (iter.hasNext()) {
-            GLPermission p = (GLPermission) iter.next();
-            Journal pj = p.getJournal();
-            if (action.equals (p.getName()) &&
-                (pj == null || (pj.getId() == j.getId())))
-            {
-                return true;
-            }
-        }
-        return false;
+        return getUser().hasPermission(action, j);
     }
     /**
      * Check user's permission in a given journal.
