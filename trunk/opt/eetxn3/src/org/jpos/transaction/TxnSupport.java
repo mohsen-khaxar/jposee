@@ -36,10 +36,32 @@ public abstract class TxnSupport extends Log
     protected int doPrepare (long id, Context ctx) throws Exception {
         return ABORTED; // misconfigured participant
     }
+    protected int doPrepareForAbort (long id, Context ctx) throws Exception {
+        return ABORTED; // misconfigured participant
+    }
     public int prepare (long id, Serializable o) {
         Context ctx = (Context) o;
         try {
             return doPrepare (id, ctx);
+        } catch (BLException e) {
+            setResultCode (ctx, e.getMessage(), e.getDetail());
+        } catch (Throwable t) {
+            ctx.log ("prepare exception in " + this.getClass().getName());
+            ctx.log (t);
+            setResultCode (ctx, t.getMessage());
+        } finally {
+            checkPoint (ctx);
+        }
+        return ABORTED;
+    }
+    
+    public int prepareForAbort (long id, Serializable o) {
+        // TxnSupport does not implement AbortParticipant on purpose,
+        // but participants willing to implement it will benefit from
+        // this method.
+        Context ctx = (Context) o;
+        try {
+            return doPrepareForAbort (id, ctx);
         } catch (BLException e) {
             setResultCode (ctx, e.getMessage(), e.getDetail());
         } catch (Throwable t) {
