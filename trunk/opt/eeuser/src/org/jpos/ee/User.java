@@ -18,12 +18,7 @@
 
 package org.jpos.ee;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.List;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -36,7 +31,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     private String password;
     private String name;
     private String email;
-    private Set<Permission> perms;
+    private Set<Role> roles;
     private Map<String,String> props;
     private boolean deleted;
     private boolean active;
@@ -45,7 +40,7 @@ public class User extends Cloneable implements Serializable, SoftDelete {
 
     public User() {
         super();
-        perms    = new LinkedHashSet<Permission> ();
+        roles    = new LinkedHashSet<Role> ();
         passwordhistory = new LinkedList<PasswordHistory> ();
     }
     public String getNick() {
@@ -96,11 +91,11 @@ public class User extends Cloneable implements Serializable, SoftDelete {
     public boolean isActive() {
         return active;
     }    
-    public void setPermissions (Set<Permission> perms) {
-        this.perms = perms;
+    public void setRoles (Set<Role> roles) {
+        this.roles = roles;
     }
-    public Set getPermissions () {
-        return perms;
+    public Set getRoles () {
+        return roles;
     }
     public void setPasswordhistory (List<PasswordHistory> passwordhistory) {
         this.passwordhistory = passwordhistory;
@@ -109,23 +104,55 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         return passwordhistory;
     }        
     public boolean hasPermission (String permName) {
-        return permName != null && perms.contains(new Permission(permName));
+        if (permName != null) {
+            for (Role r : roles) {
+                if (r.hasPermission(permName))
+                    return true;
+            }
+        }
+        return false;
     }
-    public void grant (String permName) {
-        perms.add (new Permission (permName));
+    public boolean hasAnyPermission (String[] permNames) {
+        if (permNames != null) {
+            for (String p : permNames) {
+                for (Role r : roles) {
+                    if (r.hasPermission(p))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
-    public void revoke (String permName) {
-        perms.remove (new Permission (permName));
+    public boolean hasAllPermissions (String[] permNames) {
+        if (permNames != null) {
+            for (String p : permNames) {
+                boolean hasPerm = false;
+                for (Role r : roles) {
+                    if (r.hasPermission(p))
+                        hasPerm = true;
+                }
+                if (!hasPerm)
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
-    public void revokeAll () {
-        perms.clear ();
+    public void addRole (Role role) {
+        roles.add (role);
     }
-    public String getPermissionsAsString () {
+    public void removeRole (Role role) {
+        roles.remove (role);
+    }
+    public void removeAllRoles () {
+        roles.clear ();
+    }
+    public String getRolesAsString () {
         StringBuilder sb = new StringBuilder();
-        for (Permission p : perms) {
+        for (Role r : roles) {
             if (sb.length() > 0)
                 sb.append (", ");
-            sb.append (p.getName());
+            sb.append (r.getName());
         }
         return sb.toString();
     }
