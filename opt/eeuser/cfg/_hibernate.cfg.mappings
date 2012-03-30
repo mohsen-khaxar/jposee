@@ -2,3 +2,4 @@
         <!-- modules/eeuser/cfg/__hibernate.cfg.mappings -->
         <mapping resource="org/jpos/ee/User.hbm.xml" />
         <mapping resource="org/jpos/ee/Revision.hbm.xml" />
+        <mapping resource="org/jpos/ee/Role.hbm.xml" />
