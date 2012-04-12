@@ -12,7 +12,7 @@
             <column name="name" sql-type="varchar(64)" unique="true" not-null="true" />
         </property>
 
-        <set name="permissions" lazy="false" table="role_perms" order-by="name" cascade="all-delete-orphan">
+        <set name="permissions" lazy="false" table="role_perms" order-by="name">
             <key column="role" foreign-key="FKRolePermissions"/>
             <composite-element class="org.jpos.ee.Permission">
                 <property name="name" type="string">

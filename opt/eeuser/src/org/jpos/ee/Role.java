@@ -25,7 +25,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class Role {
+public class Role extends Cloneable {
     private long id;
     private String name;
     private Set<Permission> permissions;
