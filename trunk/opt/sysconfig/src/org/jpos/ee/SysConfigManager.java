@@ -41,7 +41,11 @@ public class SysConfigManager {
         super();
         this.db = db;
     }
-
+    public SysConfigManager (DB db, String prefix) {
+        super();
+        this.db = db;
+        this.prefix = prefix;
+    }
     public SysConfigManager(Session session) {
         this.session = session;
     }
@@ -79,24 +83,44 @@ public class SysConfigManager {
         }
         return defaultValue;
     }
-    public String[] getAll  (String name) {
-        String[] values;
+    public SysConfig[] getAll (String queryString) {
+        SysConfig[] values;
         try {
             if (prefix != null)
-                name = prefix + name;
+                queryString = prefix + queryString;
             Query query = getSession().createQuery (
-                "from sysconfig in class org.jpos.ee.SysConfig where id like :name order by id"
+                "from sysconfig in class org.jpos.ee.SysConfig where id like :query order by id"
             );
-            query.setParameter ("name", name);
+            query.setParameter ("query", queryString);
             List l = query.list();
-            values = new String[l.size()];
+            values = new SysConfig[l.size()];
             Iterator iter = l.iterator();
             for (int i=0; iter.hasNext(); i++) {
-                values[i] = (String) iter.next();
+                values[i] = (SysConfig) iter.next();
             }
         } catch (HibernateException e) {
             getLog().warn (e);
-            values = new String[0];
+            values = new SysConfig[0];
+        }
+        return values;
+    }
+    public SysConfig[] getAll () {
+        SysConfig[] values;
+        try {
+            String queryAsString = "from sysconfig in class org.jpos.ee.SysConfig";
+            if (prefix != null)
+                queryAsString += " where id like :query";
+            Query query = getSession().createQuery (queryAsString + " order by id");
+            query.setParameter ("query", prefix + "%");
+            List l = query.list();
+            values = new SysConfig[l.size()];
+            Iterator iter = l.iterator();
+            for (int i=0; iter.hasNext(); i++) {
+                values[i] = (SysConfig) iter.next();
+            }
+        } catch (HibernateException e) {
+            getLog().warn (e);
+            values = new SysConfig[0];
         }
         return values;
     }
