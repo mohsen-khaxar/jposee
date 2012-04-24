@@ -1,4 +1,4 @@
-drop table eeuser_perms;
+drop table if exists eeuser_perms;
 
 create table eeuser_roles (
     eeuser bigint not null, 
