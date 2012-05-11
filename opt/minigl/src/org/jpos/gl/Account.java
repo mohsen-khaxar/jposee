@@ -265,9 +265,6 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
     public boolean isChart () {
         return (type & (DEBIT|CREDIT)) == CHART;
     }
-    /**
-     * @return true if account is a FinalAccount
-     */
     public boolean isFinalAccount () {
         return false;
     }
@@ -282,6 +279,13 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
             return "credit";
         else
             return null;
+    }
+    public boolean isAncestor(CompositeAccount ancestor) {
+        for (Account p = getParent(); p != null; p = getParent()) {
+            if (p.equals(ancestor))
+                return true;
+        }
+        return false;
     }
     /**
      * Helper method used to create a JDOM Element as defined in
