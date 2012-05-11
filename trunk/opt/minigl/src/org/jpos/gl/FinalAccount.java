@@ -55,5 +55,8 @@ public class FinalAccount extends Account {
         Element elem = super.toXML (new Element ("account"));
         return elem;
     }
+    public boolean isFinalAccount() {
+        return true;
+    }
 }
 
