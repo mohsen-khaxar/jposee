@@ -19,7 +19,6 @@
 package org.jpos.gl;
 
 import java.util.Set;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import org.jdom.Element;
 
@@ -49,11 +48,10 @@ public class FinalAccount extends Account {
         );
     }
     public Set getChildren () {
-        return null;
+        return (Set) null;
     }
     public Element toXML () {
-        Element elem = super.toXML (new Element ("account"));
-        return elem;
+        return super.toXML (new Element ("account"));
     }
     public boolean isFinalAccount() {
         return true;
