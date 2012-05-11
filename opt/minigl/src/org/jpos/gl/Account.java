@@ -266,6 +266,12 @@ public abstract class Account implements Serializable, Comparable, Cloneable {
         return (type & (DEBIT|CREDIT)) == CHART;
     }
     /**
+     * @return true if account is a FinalAccount
+     */
+    public boolean isFinalAccount () {
+        return false;
+    }
+    /**
      * Account's type
      * @return "debit", "credit" or null.
      */
