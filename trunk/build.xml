@@ -213,7 +213,7 @@
       </chmod>
     </target>
 
-    <target name="zip" depends="jar, javadoc" 
+    <target name="zip" depends="jar" 
         description="create zip distribution">
      <zip zipfile="${dist.dir}/${archive}.zip" basedir="${build.dir}"
           includes="**/*"> 
@@ -221,17 +221,20 @@
           <exclude name="doc/**" />
           <exclude name="src/**" />
           <exclude name="tmpdoc/**" />
+          <exclude name="modules/**" />
      </zip>
      <zip zipfile="${dist.dir}/${archive}-doc.zip" basedir="${build.doc}"
           includes="**/*" excludes="classes" /> 
     </target>
 
-    <target name="tgz" depends="jar, javadoc" description="create tgz distribution">
+    <target name="tgz" depends="jar" description="create tgz distribution">
      <tar tarfile="${dist.dir}/${archive}.tar" basedir="${build.dir}"
           includes="**/*"> 
         <exclude name="classes/**" />
         <exclude name="doc/**" />
         <exclude name="src/**" />
+        <exclude name="tmpdoc/**" />
+        <exclude name="modules/**" />
      </tar>
      <gzip src="${dist.dir}/${archive}.tar"
      zipfile="${dist.dir}/${archive}.tgz"/>
