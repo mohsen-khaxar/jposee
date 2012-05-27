@@ -33,10 +33,6 @@ public class SysConfigManager {
     private Session session;
     String prefix = "";
 
-    public SysConfigManager() {
-        super();
-        db = new DB();
-    }
     public SysConfigManager (DB db) {
         super();
         this.db = db;
