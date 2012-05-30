@@ -86,10 +86,12 @@ public class TestRunner
         throws ISOException, EvalError
     {
         LogEvent evt = getLog().createLogEvent ("results");
+        LogEvent evt_error = null;
         Iterator iter = suite.iterator();
         long start = System.currentTimeMillis();
         long serverTime = 0;
         for (int i=1; iter.hasNext(); i++) {
+            evt_error = getLog().createLogEvent("error");
             TestCase tc = (TestCase) iter.next();
 
             getLog().trace (
@@ -107,8 +109,13 @@ public class TestRunner
             tc.start();
 	    tc.setResponse (mux.request (m, tc.getTimeout()));
             tc.end ();
-            assertResponse (tc, bsh);
+            assertResponse(tc, bsh, evt_error);
             evt.addMessage (i + ": " + tc.toString());
+            if (evt_error.getPayLoad().size()!=0) {
+                evt_error.addMessage("filename", tc.getFilename());
+            evt.addMessage("\r\n" + evt_error);
+            }
+
             serverTime += tc.elapsed();
             if (!tc.ok()) {
                 getLog().error (tc);
@@ -158,6 +165,7 @@ public class TestRunner
                 tc.setExpectedResponse (getMessage (prefix + path + "_r"));
                 tc.setPreEvaluationScript (e.getChildTextTrim ("init"));
                 tc.setPostEvaluationScript (e.getChildTextTrim ("post"));
+                tc.setFilename(prefix + path);
 
                 String to  = e.getAttributeValue ("timeout");
                 if (to != null)
@@ -186,7 +194,7 @@ public class TestRunner
 	}
     }
     private boolean processResponse 
-        (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh)
+        (ISOMsg er, ISOMsg m, ISOMsg expected, Interpreter bsh, LogEvent evt)
         throws ISOException, EvalError
     {
         int maxField = Math.max(m.getMaxField(), expected.getMaxField());
@@ -201,8 +209,10 @@ public class TestRunner
                         bsh.set  ("value", m.getString (i));
                         Object ret = bsh.eval (value.substring (1));
                         if (ret instanceof Boolean)
-                            if (!((Boolean)ret).booleanValue())
-                                return false;
+                            if (!((Boolean) ret).booleanValue()) {
+                                evt.addMessage("field", "[" + i+ "] Boolean eval returned false");
+                                //return false;
+                            }
                         m.unset (i);
                         expected.unset (i);
                     }
@@ -211,30 +221,40 @@ public class TestRunner
                             expected.unset (i);
                             m.unset (i);
                         } else {
-                            return false;
+                            evt.addMessage("field","[" + i+ "] Mandatory field missing");
+                            //return false;
                         }
                     }
                     else if (value.startsWith("*E")) {
                         if (m.hasField (i) && er.hasField (i)) {
                             expected.set (i, er.getString (i));
                         } else {
-                            return false;
+                            evt.addMessage("field", "[" + i+ "] Echo field missing");
+                            //return false;
                         }
                     }
-                } else if (c instanceof ISOMsg) {
+                    else if (m.hasField(i) && !m.getString(i).equals(value)) {
+                        evt.addMessage("field", "[" + i+ "] Received:[" + m.getString(i) + "]" + " Expected:[" + value + "]");
+                       // return false;
+                    }
+                }
+                else if (c instanceof ISOMsg) {
                     ISOMsg rc = (ISOMsg) m.getComponent (i);
                     ISOMsg innerExpectedResponse = (ISOMsg) er.getComponent (i);
                     if (rc instanceof ISOMsg) {
-                        processResponse (innerExpectedResponse, (ISOMsg) rc, (ISOMsg) c, bsh);
+                        processResponse (innerExpectedResponse, (ISOMsg) rc, (ISOMsg) c, bsh, evt);
                     }
                 }
             } else {
                 m.unset (i);
             }
         }
+        if (evt.getPayLoad().size()!=0) {
+            return false;
+        }
         return true;
     }
-    private boolean assertResponse (TestCase tc, Interpreter bsh)
+    private boolean assertResponse (TestCase tc, Interpreter bsh, LogEvent evt)
         throws ISOException, EvalError
     {
         if (tc.getResponse() == null) {
@@ -245,7 +265,7 @@ public class TestRunner
         ISOMsg expected = (ISOMsg) tc.getExpectedResponse().clone();
         ISOMsg er = (ISOMsg) tc.getExpandedRequest().clone();
         c.setHeader ((ISOHeader) null);
-        if (!processResponse (er, c, expected, bsh)) {
+        if (!processResponse(er, c, expected, bsh, evt)) {
             tc.setResultCode (TestCase.FAILURE);
             return false;
         }

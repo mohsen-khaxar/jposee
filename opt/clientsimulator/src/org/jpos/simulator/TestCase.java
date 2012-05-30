@@ -40,6 +40,7 @@ public class TestCase implements Loggeable {
     String postEvaluationScript;
     int resultCode;
     boolean continueOnErrors;
+    private String testcasePath;
 
     public TestCase (String name) {
         super();
@@ -160,6 +161,13 @@ public class TestCase implements Loggeable {
     }
     public long getTimeout () {
         return timeout;
+    }
+    public void setFilename(String string) {
+
+        testcasePath  = string;
+    }
+    public String getFilename() {
+        return testcasePath;
     }
 }
 
