@@ -9,7 +9,7 @@
     </id>
     <property name="date"        type="timestamp" />
     <property name="deleted"     type="yes_no" />
-    <property name="source"      type="string" length="32" />
+    <property name="source"      type="string" length="64" />
     <property name="type"        type="string" length="32" />
     <property name="severity"    type="int" />
     <property name="summary"     type="string" length="255" />
