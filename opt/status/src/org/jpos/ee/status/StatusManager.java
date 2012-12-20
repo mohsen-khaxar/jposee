@@ -18,19 +18,18 @@
 
 package org.jpos.ee.status;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.Iterator;
-import java.util.Date;
 import java.sql.SQLException;
-import org.hibernate.Hibernate;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.Query;
+import org.hibernate.Transaction;
 import org.jpos.ee.DB;
 import org.jpos.ee.SysLog;
 import org.jpos.ee.SysLogEvent;
@@ -41,7 +40,7 @@ import org.jpos.ee.SysLogEvent;
 public class StatusManager {
     DB db;
     SysLog syslog;
-    public static final Map severity = new HashMap();
+    public static final Map<String, Integer> severity = new HashMap<String, Integer>();
 
     static {
         severity.put (Status.OK,       new Integer (SysLog.INFO));
@@ -61,7 +60,7 @@ public class StatusManager {
      * @param state Status.OK, Status.WARN, Status.ERROR or user defined
      * @param detail optional detail information
      */
-    public void touch (String id, String state, String detail) 
+    public void touch (String id, String state, String detail)
         throws HibernateException, SQLException
     {
         Transaction tx = db.beginTransaction();
@@ -74,9 +73,9 @@ public class StatusManager {
      * @param id status id
      * @param state Status.OK, Status.WARN, Status.ERROR or user defined
      * @param detail optional detail information
-     * @param tx transaction 
+     * @param tx transaction
      */
-    public Status touch (String id, String state, String detail, Transaction tx) 
+    public Status touch (String id, String state, String detail, Transaction tx)
         throws HibernateException, SQLException
     {
         Status status = getStatus (id, true);
@@ -90,7 +89,7 @@ public class StatusManager {
 
         String previousState = status.getState();
         if ((status.getMaxEvents() > 0 || status.getMaxEvents() == -1 ) && previousState != null && !state.equals (previousState)) {
-            Set events = status.getEvents();
+            Set<SysLogEvent> events = status.getEvents();
             if (events != null) {
                 purgeEvents (events, status.getMaxEvents());
                 StringBuffer transition = new StringBuffer();
@@ -99,8 +98,8 @@ public class StatusManager {
                 transition.append (state);
                 events.add (
                     syslog.log (
-                        "status:" + status.getId(), state, 
-                        getSysLogSeverity (state), 
+                        "status:" + status.getId(), state,
+                        getSysLogSeverity (state),
                         transition.toString(),
                         detail)
                 );
@@ -119,7 +118,7 @@ public class StatusManager {
      */
     public int getSysLogSeverity (String state) {
         if (state != null) {
-            Integer sev = (Integer) severity.get (state);
+            Integer sev = severity.get (state);
             if (sev != null)
                 return sev.intValue();
         }
@@ -140,8 +139,8 @@ public class StatusManager {
      * @param id status id and optional name (used when create=true)
      * @param create if true and status doesn't exist, a new status with an optional name would be created.
      */
-    public Status getStatus (String id, boolean create) 
-        throws HibernateException, SQLException
+    public Status getStatus (String id, boolean create)
+        throws HibernateException
     {
         String name = "";
         int sp = id.indexOf (" ");
@@ -172,15 +171,13 @@ public class StatusManager {
      * already and we return null.
      * @return command or null
      */
-    public String getNextCommand (String id) 
+    public String getNextCommand (String id)
         throws HibernateException, SQLException
     {
-        Status status = getStatus (id, false);
-        if (status != null)
-            return status.getCommand();
-        return null;
+        Status status = getStatus (id, true);
+        return status.getCommand();
     }
-    public void setNextCommand (String id, String command) 
+    public void setNextCommand (String id, String command)
         throws HibernateException, SQLException
     {
         Transaction tx = db.beginTransaction();
@@ -194,14 +191,14 @@ public class StatusManager {
      * @param id status id
      * @param response response to be logged in revision history - may be null
      */
-    public void setResponse (String id, String response) 
+    public void setResponse (String id, String response)
         throws HibernateException, SQLException
     {
         Transaction tx = db.beginTransaction();
         Status status = getStatus (id, false);
         if (status != null && status.getCommand() != null && response != null && (status.getMaxEvents() > 0 || status.getMaxEvents() == -1  )) {
-            Set events = status.getEvents();
-            if (events != null) { 
+            Set<SysLogEvent> events = status.getEvents();
+            if (events != null) {
                 purgeEvents (events, status.getMaxEvents());
                 StringBuffer sb = new StringBuffer();
                 sb.append (status.getCommand());
@@ -209,14 +206,15 @@ public class StatusManager {
                 sb.append (response);
                 events.add (
                     syslog.log (
-                        "status:" + status.getId(), "AUDIT", 
-                        SysLog.INFO, 
+                        "status:" + status.getId(), "AUDIT",
+                        SysLog.INFO,
                         sb.toString(),
                         null)
                 );
             }
         }
-        status.setCommand (null);   // command has been processed
+        if (status!=null)
+            status.setCommand (null);   // command has been processed
         tx.commit();
         db.session().evict (status);
     }
@@ -248,13 +246,13 @@ public class StatusManager {
                     transition.append ("-->");
                     transition.append (timeoutState);
                 }
-                Set events = status.getEvents();
+                Set<SysLogEvent> events = status.getEvents();
                 purgeEvents (events, status.getMaxEvents());
                 if (status.getMaxEvents() > 0 || status.getMaxEvents() == -1) {
                     events.add (
                         syslog.log (
-                            "status:" + status.getId(), state, 
-                            getSysLogSeverity (timeoutState), 
+                            "status:" + status.getId(), state,
+                            getSysLogSeverity (timeoutState),
                             transition.toString())
                     );
                 }
@@ -269,26 +267,26 @@ public class StatusManager {
     }
 
     /**
-     * check if unexpired status entries became expired, and create 
+     * check if unexpired status entries became expired, and create
      * appropriate syslog event.
      * @param id status id
      */
     public void check () throws HibernateException, SQLException {
-        Iterator iter = findByExpired(false).iterator();
+        Iterator<?> iter = findByExpired(false).iterator();
         while (iter.hasNext()) {
             check ((Status) iter.next());
         }
     }
 
-    public List findByExpired(boolean expired) throws SQLException, HibernateException {
+    public List<?> findByExpired(boolean expired) throws SQLException, HibernateException {
         Query q = db.session().createQuery ("from org.jpos.ee.status.Status where expired=:expired");
         q.setBoolean ("expired", expired);
         return q.list();
     }
-    private void purgeEvents (Set events, int maxEvents) {
-        if (maxEvents > 0) { 
+    private void purgeEvents (Set<SysLogEvent> events, int maxEvents) {
+        if (maxEvents > 0) {
             int rmcount = events.size() - maxEvents + 1;
-            Iterator iter = events.iterator();
+            Iterator<SysLogEvent> iter = events.iterator();
             for (; rmcount > 0 && iter.hasNext(); rmcount--) {
                 iter.next();
                 iter.remove ();
