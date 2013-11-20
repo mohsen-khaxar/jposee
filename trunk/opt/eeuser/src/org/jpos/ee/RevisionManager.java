@@ -25,6 +25,7 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.jpos.iso.ISOUtil;
 
 @SuppressWarnings("unused")
 public class RevisionManager {
@@ -61,11 +62,12 @@ public class RevisionManager {
     public Revision createRevision (User author, String ref, String info) {
         Revision re = new Revision();
         re.setDate (new Date());
-        re.setInfo (info);
+        re.setInfo (
+            ISOUtil.normalize(info.replaceAll("<br/>", "__br__")).replaceAll("__br__", "<br/>")
+        );
         re.setRef (ref);
         re.setAuthor (author);
         db.save (re);
         return re;
     }
 }
-
