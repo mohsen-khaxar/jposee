@@ -6,4 +6,4 @@ jPOS is a Java® platform-based, mission-critical financial transaction library/
 jPOS Extended Edition Software Development Kit goes one step beyond jPOS by providing a development environment with a growing set of proven, ready-to-deploy components based on jPOS' best practices.
 
 == jPOS-EE Documentation ==
-The jPOS-EE documentation is available in [http://jpos.org/jposee/jPOS-EE.pdf jPOS-EE.pdf]
+The jPOS-EE documentation is available in [http://jpos.org/doc/jPOS-EE.pdf jPOS-EE.pdf]
