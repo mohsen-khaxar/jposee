@@ -33,7 +33,7 @@
       </composite-element>
     </list>
 
-    <map name="props" lazy="true" table="eeuser_props" 
+    <map name="props" lazy="false" table="eeuser_props"
         cascade="all-delete-orphan">
         <key />
         <index column="propName" type="string" length="32"/>
