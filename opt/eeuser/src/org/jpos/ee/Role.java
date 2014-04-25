@@ -67,6 +67,21 @@ public class Role extends Cloneable {
         return permName != null && permissions.contains(new Permission(permName));
     }
 
+    public boolean hasPermissionLike (String permName) {
+        if (permName != null) {
+            if (permissions.contains(new Permission(permName))) {
+                return true;
+            } else {
+                for (Permission p : permissions) {
+                    if (p.getName().startsWith(permName))
+                        return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
     public void addPermission (String permName) {
         permissions.add (new Permission (permName));
     }

@@ -138,6 +138,15 @@ public class User extends Cloneable implements Serializable, SoftDelete {
         }
         return false;
     }
+    public boolean hasPermissionLike (String permName) {
+        if (permName != null) {
+            for (Role r : roles) {
+                if (r.hasPermissionLike(permName))
+                    return true;
+            }
+        }
+        return false;
+    }
     public void addRole (Role role) {
         roles.add (role);
     }
